@@ -5,7 +5,9 @@ export interface PlayerState {
     player2: Player;
 }
 
-type SetPlayer = (player: Player) => void;
+export type Event = { message: string, style: React.CSSProperties }
+
+export type SetPlayer = (player: Player) => void;
 
 export interface Gear {
     onPlayerAttack: (
@@ -13,13 +15,13 @@ export interface Gear {
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
-        ) => string | null//message
+        ) => Event | null//message
     onOpponentAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
-        ) => string | null
+        ) => Event | null
     statEffects: (player: Player) => Player
     name: string;
 }

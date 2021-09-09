@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
-import { Player as PlayerType, Gear } from '../../types-app'
+import { Player as PlayerType, Gear, Event } from '../../types-app'
 import ReactInterval from "react-interval";
 import { Player } from '../Player'
 import { Events } from '../Events'
 import styled from "styled-components";
 
 const Container = styled.div`
-display: flex;
-flex-direction: row;
+display: grid;
+grid-template-columns: 1fr 1fr 1fr;
+grid-template-rows: 100px 1fr;
+
+grid-template-areas: 'header header header' 'player1 events player2'
+`
+
+const GridArea = styled.div<{ name: string }>`
+grid-area: ${props => props.name};
 `
 
 const defaultPlayer: Omit<PlayerType, 'name'> = {
@@ -23,7 +30,7 @@ const defaultPlayer: Omit<PlayerType, 'name'> = {
 
 type SetPlayer = (player: PlayerType) => void;
 
-const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetPlayer): string => {
+const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetPlayer): Event => {
     const { armor, health } = player
 
     let healthDamage = damage - armor;
@@ -42,7 +49,7 @@ const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetP
     const newPlayer = { ...player, armor: newArmorValue, health: newHealthValue }
 
     setPlayer(newPlayer)
-    return `${player.name} takes ${damage} damage, ${healthDamage} to their health.`
+    return { message: `${player.name} takes ${damage} damage, ${healthDamage} to their health.`, style: { color: 'blue'}}
 
 }
 
@@ -73,7 +80,6 @@ const updatePlayerStats = (player: PlayerType, stats: Partial<{ [key in Stats] :
     statNames.forEach((statName: Stats) => {
         updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
     })
-    console.log('updatedplauer!!', updatedPlayer)
     setPlayer(updatedPlayer)
 }
 
@@ -101,11 +107,11 @@ const megaSword: Gear = {
 const reflector: Gear = {
     onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
         updatePlayerStats(player, { attack: 1 }, setPlayer)
-        return `${player.name} attack boosted by 1.`
+        return { message: `${player.name} attack boosted by 1.`, style: {}}
     },
     onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
         applyDamageToPlayer(opponent, 1, setOpponent)
-        return `${opponent.name} reflected 1 damage back to ${player.name}!`
+        return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
     },
     statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1, speed: 1 }),
     name: 'reflector',
@@ -130,7 +136,7 @@ export const Game = () => {
 
     const [playerTurn, setPlayerTurn] = useState<Turn>(player1.speed > player2.speed ? 1 : 0)
     const [round, setRound] = useState<number>(0)
-    const [events, setEvents] = useState<string[]>([])
+    const [events, setEvents] = useState<Event[]>([])
 
     const attack = (
         attackingPlayer: PlayerType, 
@@ -138,7 +144,7 @@ export const Game = () => {
         setAttackingPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
         ) => {
-        const attackEvent = `${attackingPlayer.name} ' attacks!`
+        const attackEvent = { message: `${attackingPlayer.name} ' attacks!`, style: {color: 'red', marginTop: '8px'} }
         setEvents(events => [...events, attackEvent])
 
         const attackerGear = attackingPlayer.gear;
@@ -163,6 +169,7 @@ export const Game = () => {
     const gameLoop = () => {
         const shouldGameContinue = round < 20 && player1.health > 0 && player2.health > 0
 
+
         if(shouldGameContinue) {
             const attackingPlayer = playerTurn ? player1 : player2;
             const defendingPlayer = playerTurn ? player2 : player1;
@@ -174,19 +181,33 @@ export const Game = () => {
     
             setPlayerTurn(switchTurn(playerTurn))
             console.log(round, player1, player2)
-            
+
             setRound(round => (round + 1));
+        } else {
+            const conclusionEvent = { message: `${player1.health < 0 ? player2.name : player1.name} wins!!`, style: { color: 'purple'}}
+            if(!events.find(event => event.message === conclusionEvent.message)) setEvents(events => [...events, conclusionEvent])
         }
     }
 
 
     return (
     <Container>
-        <Player player={player1}/>
-        <Events events={events}/>
-        <Player player={player2}/>
+
+        <GridArea name="player1">
+            <Player player={player1}/>
+        </GridArea>
+
+        <GridArea name="events">
+            <Events events={events}/>
+        </GridArea>
+
+        <GridArea name="player2">
+         <Player player={player2}/>
+        </GridArea>
+
         <ReactInterval timeout={1000} enabled={round < 20 && player1.health > 0 && player2.health > 0}
           callback={gameLoop} />
+
       </Container>
     )
 }

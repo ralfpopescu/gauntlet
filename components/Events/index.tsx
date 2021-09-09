@@ -1,4 +1,4 @@
-import { Player as PlayerType } from '../../types-app'
+import { Player as PlayerType, Event as EventType } from '../../types-app'
 import styled from 'styled-components'
 
 const Container = styled.div`
@@ -7,13 +7,13 @@ flex-direction: column;
 `
 
 const Event = styled.div`
-font-size: 20px;
+margin-bottom: 8px;
 `
 
-export const Events = ({ events }: { events: string[]}) => {
+export const Events = ({ events }: { events: EventType[]}) => {
     return (
         <Container>
-            {events.map(event => <Event>{event}</Event>)}
+            {events.map(event => <Event style={event.style}>{event.message}</Event>)}
         </Container>
     )
 }
