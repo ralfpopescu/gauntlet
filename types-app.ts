@@ -13,13 +13,13 @@ export interface Gear {
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
-        ) => void
+        ) => string | null//message
     onOpponentAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
-        ) => void
+        ) => string | null
     statEffects: (player: Player) => Player
     name: string;
 }
