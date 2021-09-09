@@ -1,4 +1,6 @@
-export type MetaEthos = { name: string, values: string[], color: string }
+export type Ethos = 'Tarcunia' | 'Visyk' | 'Rennti' | 'Morto' | 'Shii' | 'Parlis' | 'Lommam' | 'Eckao' | 'Lux'
+
+export type MetaEthos = { name: Ethos, values: string[], color: string }
 
 export const ethos: MetaEthos[] = [
     {
@@ -47,3 +49,12 @@ export const ethos: MetaEthos[] = [
         color: '#EC9DED'
     },
 ]
+
+export const getMetaEthosByName = (name: Ethos): MetaEthos => {
+    const defaultEthos: MetaEthos = {
+        name: 'Tarcunia',
+        values: ['Peace','Home','Comfort','Life','Health','Nature','Love','Healing','Protection'],
+        color: '#FFFAFF'
+    }
+    return ethos.find(e => e.name.toLowerCase() === name.toLowerCase()) || defaultEthos
+}

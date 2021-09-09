@@ -24,9 +24,11 @@ export interface Gear {
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
         ) => Event | null
-    statEffects: (player: Player) => Player
+    statEffects: Partial<{[key in Stats] : number}>
     name: string;
     slot: Slot;
+    description: string;
+    effectDescription?: string;
 }
 
 export interface Player {
@@ -40,4 +42,6 @@ export interface Player {
     dodgeChance: number;
     gear: Gear[]
 }
+
+type Stats = keyof Omit<Player, 'gear' | 'name'>
 

@@ -91,25 +91,28 @@ const updatePlayerStats = (player: PlayerType, stats: Partial<{ [key in Stats] :
 const sword: Gear = {
     onPlayerAttack: doNothing,
     onOpponentAttack: doNothing,
-    statEffects: (player) => applyGearStatsToPlayer(player, { attack: 1 }),
+    statEffects: { attack: 1 },
     name: 'sword',
     slot: 'mainhand',
+    description: 'A simple sword that gets the job done.'
 }
 
 const shield: Gear = {
     onPlayerAttack: doNothing,
     onOpponentAttack: doNothing,
-    statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1 }),
+    statEffects: { armor: 1 },
     name: 'shield',
     slot: 'offhand',
+    description: 'A small wooden shield of average craftsmanship.'
 }
 
 const megaSword: Gear = {
     onPlayerAttack: doNothing,
     onOpponentAttack: doNothing,
-    statEffects: (player) => applyGearStatsToPlayer(player, { attack: 3 }),
+    statEffects: { attack: 3 },
     name: 'mega sword',
     slot: 'mainhand',
+    description: 'A massive sword.'
 }
 
 const reflector: Gear = {
@@ -121,18 +124,20 @@ const reflector: Gear = {
         applyDamageToPlayer(opponent, 1, setOpponent)
         return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
     },
-    statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1, speed: 1 }),
+    statEffects: { armor: 1, speed: 1 },
     name: 'reflector',
     slot: 'offhand',
+    description: 'A massive shield.'
 }
 
 const getInitialStats = (player: PlayerType) => {
     const { gear } = player;
+    let allStatChanges = {}
     let updatedPlayer = { ...player }
     gear.forEach(g => {
-        updatedPlayer = g.statEffects(updatedPlayer)
+        allStatChanges = { ...allStatChanges, ...g.statEffects }
     })
-    return updatedPlayer;
+    return applyGearStatsToPlayer(updatedPlayer, allStatChanges);
 }
 
 export const Game = () => {

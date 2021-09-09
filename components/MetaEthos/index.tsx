@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { MetaEthos as EthosType } from '../../utils/ethos'
+import { MetaEthos as EthosType, Ethos } from '../../utils/ethos'
 
 const ValueContainer = styled.div`
 display: grid;
@@ -44,6 +44,14 @@ border: 1px solid black;
 margin-right: 8px;
 `
 
+const EthosEmpty = styled.div`
+height: 30px;
+width: 30px;
+border-radius: 50%;
+border: 1px dotted black;
+margin-right: 8px;
+`
+
 const Container = styled.div`
 display: flex;
 flex-direction: column;
@@ -56,11 +64,21 @@ animation-duration: .1s;
 }
 `
 
-export const MetaEthos = ({ ethos, onClick }: { ethos: EthosType, onClick?: () => void }) => {
+export const MetaEthos = ({ ethos, onClick }: { ethos: EthosType, onClick?: (ethos: EthosType) => void }) => {
     return (
-        <TitleContainer onClick={onClick}>
+        <TitleContainer onClick={() => onClick && onClick(ethos)}>
             <EthosColor color={ethos.color}/>
             <EthosName>{ethos.name}</EthosName>
+        </TitleContainer>
+    )
+}
+
+
+export const EmptyMetaEthos = ({ onClick }: { onClick?: () => void }) => {
+    return (
+        <TitleContainer onClick={onClick}>
+            <EthosEmpty />
+            <EthosName>-----</EthosName>
         </TitleContainer>
     )
 }

@@ -52,24 +52,26 @@ const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetP
 
 }
 
-export const reciptes: Recipe[] = [
+export const recipes: Recipe[] = [
     {
         item: {
             onPlayerAttack: doNothing,
             onOpponentAttack: doNothing,
-            statEffects: (player) => applyGearStatsToPlayer(player, { attack: 1 }),
+            statEffects: { attack: 1 },
             name: 'Simple Sword',
             slot: 'mainhand',
+            description: 'A simple sword that gets the job done.'
         },
-        requiredMetaEthos: ['rennti'],
+        requiredMetaEthos: ['Eckao'],
         upgrade: {
-            requiredMetaEthos: ['morto'],
+            requiredMetaEthos: ['Rennti'],
             upgradedItem: {
                 onPlayerAttack: doNothing,
                 onOpponentAttack: doNothing,
-                statEffects: (player) => applyGearStatsToPlayer(player, { attack: 3 }),
+                statEffects: { attack: 3 },
                 name: 'Sharp Sword',
                 slot: 'mainhand',
+                description: 'An iron sword that has been sharpened with a whetstone.'
             }
         }
     },
@@ -77,19 +79,51 @@ export const reciptes: Recipe[] = [
         item: {
             onPlayerAttack: doNothing,
             onOpponentAttack: doNothing,
-            statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1 }),
+            statEffects: { armor: 1 },
             name: 'Simple Shield',
             slot: 'offhand',
+            description: 'A small wooden shield of average craftsmanship.'
         },
-        requiredMetaEthos: ['rennti'],
+        requiredMetaEthos: ['Lommam'],
         upgrade: {
-            requiredMetaEthos: ['morto'],
+            requiredMetaEthos: ['Eckao'],
             upgradedItem: {
                 onPlayerAttack: doNothing,
                 onOpponentAttack: doNothing,
-                statEffects: (player) => applyGearStatsToPlayer(player, { attack: 3 }),
+                statEffects: { attack: 3 },
                 name: 'Sturdy Shield',
                 slot: 'offhand',
+                description: 'A small wooden shield that has been fortified with metal.'
+            }
+        }
+    },
+    {
+        item: {
+            onPlayerAttack: doNothing,
+            onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
+                applyDamageToPlayer(opponent, 1, setOpponent)
+                return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
+            },
+            statEffects: { armor: 1, speed: 1 },
+            name: 'Burning Shield',
+            slot: 'offhand',
+            description: 'A bright shield that is extremely hot to the touch.',
+            effectDescription: 'Deals 1 damage to an attacking opponent.',
+        },
+        requiredMetaEthos: ['Rennti', 'Eckao'],
+        upgrade: {
+            requiredMetaEthos: ['Lux'],
+            upgradedItem: {
+                onPlayerAttack: doNothing,
+                onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
+                    applyDamageToPlayer(opponent, 2, setOpponent)
+                    return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
+                },
+                statEffects: { armor: 1, speed: 1 },
+                name: 'Sun Shield of Blinding',
+                slot: 'offhand',
+                description: 'A shield that dazzles all who gaze upon it.',
+                effectDescription: 'Deals 2 damage to an attacking opponent and has 20% chance to stun them.',
             }
         }
     },
@@ -99,29 +133,27 @@ export const reciptes: Recipe[] = [
                 updatePlayerStats(player, { attack: 1 }, setPlayer)
                 return { message: `${player.name} attack boosted by 1.`, style: {}}
             },
-            onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
-                applyDamageToPlayer(opponent, 1, setOpponent)
-                return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
-            },
-            statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1, speed: 1 }),
-            name: 'Burning Shield',
-            slot: 'offhand',
+            onOpponentAttack: doNothing,
+            statEffects: { armor: 1, speed: 1 },
+            name: 'Blade of Enlightenment',
+            slot: 'mainhand',
+            description: 'A powerful sword that brings mental clarity to any wielder.',
+            effectDescription: 'Boosts attack by 1 each turn.',
         },
-        requiredMetaEthos: ['rennti'],
+        requiredMetaEthos: ['Shii', 'Lommam', 'Eckao'],
         upgrade: {
-            requiredMetaEthos: ['morto'],
+            requiredMetaEthos: ['Morto'],
             upgradedItem: {
                 onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
                     updatePlayerStats(player, { attack: 1 }, setPlayer)
                     return { message: `${player.name} attack boosted by 1.`, style: {}}
                 },
-                onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
-                    applyDamageToPlayer(opponent, 1, setOpponent)
-                    return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
-                },
-                statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1, speed: 1 }),
-                name: 'Sun Shield of Blinding',
-                slot: 'offhand',
+                onOpponentAttack: doNothing,
+                statEffects: { armor: 1, speed: 1 },
+                name: 'Halcyon',
+                slot: 'mainhand',
+                description: 'A blade wielded by users who knew too much.',
+                effectDescription: 'Boosts attack by 2 every turn.',
             }
         }
     }
