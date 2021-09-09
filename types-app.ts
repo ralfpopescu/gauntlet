@@ -9,6 +9,8 @@ export type Event = { message: string, style: React.CSSProperties }
 
 export type SetPlayer = (player: Player) => void;
 
+export type Slot = 'mainhand' | 'offhand' | 'chest' | 'head' | 'feet'
+
 export interface Gear {
     onPlayerAttack: (
         attackingPlayer: Player, 
@@ -24,6 +26,7 @@ export interface Gear {
         ) => Event | null
     statEffects: (player: Player) => Player
     name: string;
+    slot: Slot;
 }
 
 export interface Player {

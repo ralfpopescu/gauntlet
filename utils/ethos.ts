@@ -1,6 +1,6 @@
-export type Ethos = { name: string, values: string[], color: string }
+export type MetaEthos = { name: string, values: string[], color: string }
 
-export const ethos: Ethos[] = [
+export const ethos: MetaEthos[] = [
     {
         name: 'Tarcunia',
         values: ['Peace','Home','Comfort','Life','Health','Nature','Love','Healing','Protection'],

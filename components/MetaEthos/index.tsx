@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import { Ethos as EthosType } from '../../utils/ethos'
+import { MetaEthos as EthosType } from '../../utils/ethos'
 
 const ValueContainer = styled.div`
 display: grid;

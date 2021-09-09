@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Player as PlayerType, Gear, Event } from '../../types-app'
 import ReactInterval from "react-interval";
 import { Player } from '../Player'
@@ -93,6 +93,7 @@ const sword: Gear = {
     onOpponentAttack: doNothing,
     statEffects: (player) => applyGearStatsToPlayer(player, { attack: 1 }),
     name: 'sword',
+    slot: 'mainhand',
 }
 
 const shield: Gear = {
@@ -100,6 +101,7 @@ const shield: Gear = {
     onOpponentAttack: doNothing,
     statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1 }),
     name: 'shield',
+    slot: 'offhand',
 }
 
 const megaSword: Gear = {
@@ -107,6 +109,7 @@ const megaSword: Gear = {
     onOpponentAttack: doNothing,
     statEffects: (player) => applyGearStatsToPlayer(player, { attack: 3 }),
     name: 'mega sword',
+    slot: 'mainhand',
 }
 
 const reflector: Gear = {
@@ -120,6 +123,7 @@ const reflector: Gear = {
     },
     statEffects: (player) => applyGearStatsToPlayer(player, { armor: 1, speed: 1 }),
     name: 'reflector',
+    slot: 'offhand',
 }
 
 const getInitialStats = (player: PlayerType) => {
