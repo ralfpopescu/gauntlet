@@ -17,6 +17,11 @@ const GridArea = styled.div<{ name: string }>`
 grid-area: ${props => props.name};
 `
 
+const Header = styled.div`
+text-align: center;
+font-size: 32px;
+`
+
 const defaultPlayer: Omit<PlayerType, 'name'> = {
     health: 10,
     attack: 1,
@@ -192,6 +197,12 @@ export const Game = () => {
 
     return (
     <Container>
+
+        <GridArea name="header">
+            <Header>
+                GAUNTLET
+            </Header>
+        </GridArea>
 
         <GridArea name="player1">
             <Player player={player1}/>
