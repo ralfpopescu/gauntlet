@@ -3,10 +3,21 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import styled from 'styled-components';
+
+
+const Font = styled.div`
+font-family: 'VT323', monospace;
+`
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Major+Mono+Display&family=VT323&display=swap');
+    </style>
+    <Font>
+      <App />
+    </Font>
   </React.StrictMode>,
   document.getElementById('root')
 );
