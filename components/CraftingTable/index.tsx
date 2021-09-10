@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import styled from "styled-components";
 import { ethos, MetaEthos as MetaEthosType } from '../../utils/ethos'
+import { Gear } from '../../types-app'
 import { MetaEthos, EmptyMetaEthos} from '../MetaEthos'
 
 const Container = styled.div`
@@ -29,6 +30,12 @@ const Column = styled.div`
 display: column;
 `
 
+const CraftedGear = ({ gear }: { gear: Gear }) => {
+    return (
+        <div>{gear.name}</div>
+    )
+}
+
 
 type CraftingTableProps = { 
     hand: MetaEthosType[], 
@@ -40,6 +47,7 @@ type CraftingTableProps = {
     craftingTableIngredients: MetaEthosType[], 
     onCraftingTableIngredientClick: ((metaEthos: MetaEthosType) => void),
     clearTable: () => void,
+    craftedGear: Gear[]
 }
 
 export const CraftingTable = ({ 
@@ -52,6 +60,7 @@ export const CraftingTable = ({
     clearTable,
     craftingTableIngredients,
     onCraftingTableIngredientClick,
+    craftedGear,
 } : CraftingTableProps) => {
     return (
         <Container>
@@ -82,6 +91,7 @@ export const CraftingTable = ({
                 {craftingTableIngredients.map((ethos) => <MetaEthos ethos={ethos} />)}
                 {new Array(5 - craftingTableIngredients.length).fill(null).map((_, i) => <EmptyMetaEthos />)}
             </EthosContainer>
+            {craftedGear.map(gear => <CraftedGear gear={gear}/>)}
             <button onClick={clearTable}>clear</button>
             </>)}
         </Container>

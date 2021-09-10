@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import styled from "styled-components";
 import { ethos, MetaEthos as MetaEthosType } from '../../utils/ethos'
+import { Gear } from '../../types-app'
 import { CraftingTable } from '../CraftingTable'
 import { CraftingBook } from '../CraftingBook'
 
@@ -17,6 +18,8 @@ export const Craft = () => {
     const [chosen, setChosen] = useState<MetaEthosType[]>([])
     const [hand] = useState<MetaEthosType[]>(rollRandomEthos(7))
     const [choices] = useState<MetaEthosType[]>(rollRandomEthos(5))
+    const [craftedGear, setCraftedGear] = useState<Gear[]>([])
+    
 
     const [craftingTableIngredients, setCraftingTableIngredients] = useState<MetaEthosType[]>([])
 
@@ -38,8 +41,12 @@ export const Craft = () => {
                 craftingTableIngredients={craftingTableIngredients}
                 onCraftingTableIngredientClick={(ethos) => setCraftingTableIngredients(i => [...i, ethos])}
                 clearTable={() => setCraftingTableIngredients([])}
+                craftedGear={craftedGear}
             />
-            <CraftingBook />
+            <CraftingBook 
+            craftingTableIngredients={craftingTableIngredients} 
+            onCraft={(gear: Gear) => setCraftedGear(allGear => [...allGear, gear])} 
+            />
         </Container>
     )
 }
