@@ -19,12 +19,14 @@ export interface Gear {
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
+        round: number,
         ) => Event | null//message
     onOpponentAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
+        round: number,
         ) => Event | null
     statEffects: StatEffects
     name: string;

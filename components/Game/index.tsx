@@ -165,12 +165,12 @@ export const Game = () => {
         const defendingGear = defendingPlayer.gear;
     
         attackerGear.forEach(gear => {
-            const event = gear.onPlayerAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer)
+            const event = gear.onPlayerAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
             if(event) setEvents(events => [...events, event])
         })
     
         defendingGear.forEach(gear => {
-            const event = gear.onOpponentAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer)
+            const event = gear.onOpponentAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
             if(event) setEvents(events => [...events, event])
         })
     
