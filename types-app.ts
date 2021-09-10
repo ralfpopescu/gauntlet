@@ -11,6 +11,8 @@ export type SetPlayer = (player: Player) => void;
 
 export type Slot = 'mainhand' | 'offhand' | 'chest' | 'head' | 'feet'
 
+export type StatEffects = Partial<{[key in Stats] : number}>;
+
 export interface Gear {
     onPlayerAttack: (
         attackingPlayer: Player, 
@@ -24,7 +26,7 @@ export interface Gear {
         setAttackPlayer: SetPlayer,
         setDefendingPlayer: SetPlayer,
         ) => Event | null
-    statEffects: Partial<{[key in Stats] : number}>
+    statEffects: StatEffects
     name: string;
     slot: Slot;
     description: string;
@@ -43,5 +45,5 @@ export interface Player {
     gear: Gear[]
 }
 
-type Stats = keyof Omit<Player, 'gear' | 'name'>
+export type Stats = keyof Omit<Player, 'gear' | 'name'>
 
