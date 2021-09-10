@@ -18,6 +18,7 @@ export const Craft = () => {
     const [chosen, setChosen] = useState<MetaEthosType[]>([])
     const [hand] = useState<MetaEthosType[]>(rollRandomEthos(7))
     const [choices] = useState<MetaEthosType[]>(rollRandomEthos(5))
+    const [confirmedIngredients, setConfirmedIngredients] = useState<MetaEthosType[]>([])
     const [craftedGear, setCraftedGear] = useState<Gear[]>([])
     
 
@@ -36,12 +37,25 @@ export const Craft = () => {
                 chosen={chosen} 
                 onConfirm={() => {
                     if(hand.length + chosen.length === 10) setConfirmed(true)
+                    setConfirmedIngredients([...hand, ...chosen])
                 }}
                 confirmed={confirmed}
                 craftingTableIngredients={craftingTableIngredients}
-                onCraftingTableIngredientClick={(ethos) => setCraftingTableIngredients(i => [...i, ethos])}
+                onCraftingTableIngredientClick={(ethos) => {
+                    setCraftingTableIngredients(i => [...i, ethos])
+                    let found = false;
+                    setConfirmedIngredients(confirmedIngredients.filter(i => {
+                        if(found) return found;
+                        const isEthos = i.name === ethos.name;
+                        const remove = isEthos && !found;
+                        console.log('removeremove', remove)
+                        found = true;
+                        return remove;
+                    }))
+                }}
                 clearTable={() => setCraftingTableIngredients([])}
                 craftedGear={craftedGear}
+                confirmedIngredients={confirmedIngredients}
             />
             <CraftingBook 
             craftingTableIngredients={craftingTableIngredients} 

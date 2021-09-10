@@ -48,6 +48,7 @@ type CraftingTableProps = {
     onCraftingTableIngredientClick: ((metaEthos: MetaEthosType) => void),
     clearTable: () => void,
     craftedGear: Gear[]
+    confirmedIngredients: MetaEthosType[], 
 }
 
 export const CraftingTable = ({ 
@@ -61,6 +62,7 @@ export const CraftingTable = ({
     craftingTableIngredients,
     onCraftingTableIngredientClick,
     craftedGear,
+    confirmedIngredients, 
 } : CraftingTableProps) => {
     return (
         <Container>
@@ -85,7 +87,8 @@ export const CraftingTable = ({
             (<>
             <div>CRAFTING TABLE</div>
             <EthosContainer>
-                {[...hand, ...chosen].map((ethos) => <MetaEthos ethos={ethos} onClick={onCraftingTableIngredientClick}/>)}
+                {confirmedIngredients.map((ethos) => <MetaEthos ethos={ethos} onClick={onCraftingTableIngredientClick}/>)}
+                {new Array(10 - confirmedIngredients.length).fill(null).map((_, i) => <EmptyMetaEthos />)}
             </EthosContainer>
             <EthosContainer>
                 {craftingTableIngredients.map((ethos) => <MetaEthos ethos={ethos} />)}
