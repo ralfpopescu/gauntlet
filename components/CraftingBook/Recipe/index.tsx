@@ -5,6 +5,8 @@ import { MetaEthos } from '../../MetaEthos'
 import { getMetaEthosByName } from '../../../utils/ethos'
 import { Stats as StatsType, StatEffects, Gear } from '../../../types-app'
 import { ethos, MetaEthos as MetaEthosType } from '../../../utils/ethos'
+import { useAppDispatch, useAppSelector } from '../../../redux'
+import { craft } from '../../../redux/slices/crafting'
 
 import { ReactComponent as Health } from '../../../assets/heart.svg'
 import { ReactComponent as Speed } from '../../../assets/hermes.svg'
@@ -71,8 +73,8 @@ const Stats = ({ stats }: { stats: StatEffects }) => {
     )
 }
 
-const meetsRequirements = (recipe: RecipeType, ingredients: MetaEthosType[], upgrade: boolean) => {
-    const ingredientNames = ingredients.map(i => i.name);
+const meetsRequirements = (recipe: RecipeType, ingredients: Array<MetaEthosType | null>, upgrade: boolean) => {
+    const ingredientNames = ingredients.filter(i => i).map(i => i ? i.name : null);
     const required = upgrade ? recipe.upgrade.requiredMetaEthos : recipe.requiredMetaEthos;
     return required
     .map(metaEthos => ingredientNames.includes(metaEthos))
@@ -82,19 +84,21 @@ const meetsRequirements = (recipe: RecipeType, ingredients: MetaEthosType[], upg
 type RecipeProps = { 
     recipe: RecipeType, 
     craftingTableIngredients?: MetaEthosType[] 
-    onCraft: (gear: Gear) => void;
 }
 
-export const Recipe = ({ recipe, craftingTableIngredients = [], onCraft }: RecipeProps) => {
+export const Recipe = ({ recipe }: RecipeProps) => {
     const [showUpgrade, setShowUpgrade] = useState<boolean>(false)
-    const meetRequirements = meetsRequirements(recipe, craftingTableIngredients, showUpgrade)
-    const gear: Gear = showUpgrade ? recipe.upgrade.upgradedItem : recipe.item;
+    const { craftingTable } = useAppSelector(state => state.crafting);
+    const meetRequirements = meetsRequirements(recipe, craftingTable, showUpgrade)
+    const dispatch = useAppDispatch();
+
+    const onCraft = () => dispatch(craft({ recipe, upgrade: showUpgrade }))
 
     return (
         <Container>
             <Row>
                 {console.log(showUpgrade)}
-                <button disabled={!meetRequirements} onClick={() => meetRequirements ? onCraft(gear) : null}>craft</button>
+                <button disabled={!meetRequirements} onClick={() => meetRequirements ? onCraft() : null}>craft</button>
                 <Name>{showUpgrade ? recipe.upgrade.upgradedItem.name : recipe.item.name}</Name>
                 <button onClick={() => setShowUpgrade(value => !value)}>{showUpgrade ? 'downgrade' : 'upgrade'}</button>
             </Row>

@@ -67,6 +67,7 @@ export const craftingSlice = createSlice({
     },
     confirm: (state) => {
       state.metaEthosInventory = [...state.chosen, ...state.hand]
+      state.confirmed = true;
     },
     putOnCraftingTable: (state, action: PayloadAction<number>) => {
       const metaEthosIndex = action.payload;
@@ -108,6 +109,6 @@ export const craftingSlice = createSlice({
   },
 })
 
-export const { choose, removeChoice, confirm, putOnCraftingTable, removeFromCraftingTable } = craftingSlice.actions
+export const { choose, removeChoice, confirm, putOnCraftingTable, removeFromCraftingTable, craft } = craftingSlice.actions
 
 export default craftingSlice.reducer
