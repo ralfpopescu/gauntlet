@@ -14,12 +14,13 @@ type CraftingIngredientsState = {
     playerGear: Gear[],
 }
 
+//nulls represent empty slots
 const initialState = {
     hand: rollRandomEthos(7),
     choices: rollRandomEthos(5),
-    chosen: [],
+    chosen: [null, null, null],
     metaEthosInventory: [],
-    craftingTable: [],
+    craftingTable: [null, null, null, null, null],
     confirmed: false,
     playerGear: [],
 } as CraftingIngredientsState;
@@ -36,9 +37,13 @@ const removeFromMetaEthosArrayAndAddToAnother = (
   const removedFrom = [...removeFrom];
   const metaEthos = removeFrom[index];
   if(metaEthos) {
-    const addedTo = [...addTo, metaEthos];
-
-    removedFrom[index] = null;
+    //will only replace if there is a null to fill, representing empty slots
+    const nullIndex = addTo.findIndex(a => !a);
+    const addedTo = [...addTo];
+    if(nullIndex >= 0) {
+      addedTo[nullIndex] = metaEthos;
+      removedFrom[index] = null;
+    }
   
     return { removedFrom, addedTo }
   }
@@ -85,7 +90,11 @@ export const craftingSlice = createSlice({
     },
     craft: (state, action: PayloadAction<CraftInput>) => {
       const { recipe, upgrade } = action.payload
-      const { requiredMetaEthos } = upgrade ? recipe.upgrade : recipe;
+      
+      const requiredMetaEthos = upgrade ? 
+      [...recipe.upgrade.requiredMetaEthos, ...recipe.requiredMetaEthos] : 
+      recipe.requiredMetaEthos;
+
       const gear = upgrade ? recipe.upgrade.upgradedItem : recipe.item;
       const { craftingTable } = state;
 
@@ -103,6 +112,7 @@ export const craftingSlice = createSlice({
           //remove from crafting table
           newCraftingTable[i] = null;
         })
+        state.craftingTable = [...newCraftingTable]
         state.playerGear = [...state.playerGear, gear]
       }
     },
