@@ -62,6 +62,7 @@ const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetP
 export const recipes: Recipe[] = [
     {
         item: {
+            id: 1,
             onPlayerAttack: doNothing,
             onOpponentAttack: doNothing,
             statEffects: { attack: 1 },
@@ -73,6 +74,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Rennti'],
             upgradedItem: {
+                id: 2,
                 onPlayerAttack: doNothing,
                 onOpponentAttack: doNothing,
                 statEffects: { attack: 3 },
@@ -84,6 +86,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 3,
             onPlayerAttack: doNothing,
             onOpponentAttack: doNothing,
             statEffects: { armor: 1 },
@@ -95,6 +98,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Eckao'],
             upgradedItem: {
+                id: 4,
                 onPlayerAttack: doNothing,
                 onOpponentAttack: doNothing,
                 statEffects: { attack: 3 },
@@ -106,6 +110,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 4,
             onPlayerAttack: doNothing,
             onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
                 applyDamageToPlayer(opponent, 1, setOpponent)
@@ -121,6 +126,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Lux'],
             upgradedItem: {
+                id: 5,
                 onPlayerAttack: doNothing,
                 onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
                     applyDamageToPlayer(opponent, 2, setOpponent)
@@ -136,6 +142,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 6,
             onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
                 updatePlayerStats(player, { attack: 1 }, setPlayer)
                 return { message: `${player.name} attack boosted by 1.`, style: {}}
@@ -151,6 +158,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Morto', 'Morto'],
             upgradedItem: {
+                id: 7,
                 onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
                     updatePlayerStats(player, { attack: 1 }, setPlayer)
                     return { message: `${player.name} attack boosted by 1.`, style: {}}
@@ -166,6 +174,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 8,
             onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                 if(opponent.armor) {
                     updatePlayerStats(opponent, { armor: 0 }, setOpponent)
@@ -184,6 +193,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Morto'],
             upgradedItem: {
+                id: 8,
                 onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                     updatePlayerStats(player, { attack: 1 }, setPlayer)
                     return { message: `${player.name} attack boosted by 1.`, style: {}}
@@ -199,6 +209,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 9,
             onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                 const shouldHeal = roll(.4);
                 if(shouldHeal) {
@@ -218,6 +229,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Parlis'],
             upgradedItem: {
+                id: 10,
                 onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                     const shouldHeal = roll(.2);
                     if(shouldHeal) {
@@ -237,6 +249,7 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
+            id: 11,
             onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                 const extraHit = roll(.5);
                 if(extraHit && round === 0) {
@@ -256,6 +269,7 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Parlis'],
             upgradedItem: {
+                id: 12,
                 onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
                     setOpponent({ ...opponent, health: opponent.health - player.attack});
                     return { message: `${player.name} struck an extra time!`, style: { color: 'green' }}
@@ -270,3 +284,12 @@ export const recipes: Recipe[] = [
         }
     }
 ]
+
+export const gearIdsToGear = (gearIds: number[]): Gear[] => gearIds.map(gearId => {
+    const recipe = recipes.find(r => r.item.id === gearId || r.upgrade.upgradedItem.id === gearId);
+    const item = recipe?.item;
+    const upgradedItem = recipe?.upgrade.upgradedItem;
+
+    if(item?.id === gearId) return item;
+    return upgradedItem;
+}).filter(i => i) as Gear[];

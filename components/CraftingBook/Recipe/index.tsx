@@ -57,7 +57,7 @@ const getIconFromStatName: IconMap = {
     armor: () => <Armor style={iconStyle}/>,
     attack: () => <Attack style={iconStyle}/>,
     critChance: () => <Crit style={iconStyle}/>,
-    missChance: () => <Accuracy style={iconStyle}/>,
+    accuracy: () => <Accuracy style={iconStyle}/>,
     dodgeChance: () => <Speed style={iconStyle}/>,
 
 }

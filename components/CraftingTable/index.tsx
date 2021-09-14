@@ -6,9 +6,12 @@ import {
     putOnCraftingTable, 
     removeFromCraftingTable, 
     craft } from '../../redux/slices/crafting'
+import { initializePlayer, initializeTurn, PlayerIndex } from '../../redux/slices/game'
+import { startGame } from '../../redux/slices/app'
 import styled from "styled-components";
 import { ethos, MetaEthos as MetaEthosType } from '../../utils/ethos'
 import { Gear } from '../../types-app'
+import { build1, build2 } from '../../utils/default-builds';
 import { MetaEthos, EmptyMetaEthos} from '../MetaEthos'
 import { PlayerGear } from '../PlayerGear'
 
@@ -38,21 +41,6 @@ const Column = styled.div`
 display: column;
 `
 
-
-type CraftingTableProps = { 
-    hand: MetaEthosType[], 
-    chosen: MetaEthosType[], 
-    choices: MetaEthosType[], 
-    onMetaEthosClick: ((metaEthos: MetaEthosType) => void)
-    onConfirm: () => void,
-    confirmed: boolean,
-    craftingTableIngredients: MetaEthosType[], 
-    onCraftingTableIngredientClick: ((metaEthos: MetaEthosType) => void),
-    clearTable: () => void,
-    craftedGear: Gear[]
-    confirmedIngredients: MetaEthosType[], 
-}
-
 export const CraftingTable = () => {
     const { choices, hand, chosen, craftingTable, metaEthosInventory, playerGear, confirmed } = useAppSelector(state => state.crafting);
     const dispatch = useAppDispatch();
@@ -60,6 +48,12 @@ export const CraftingTable = () => {
     const addFromChoices = (index: number) => dispatch(choose(index))
     const onMetaEthosInventoryClick = (index: number) => dispatch(putOnCraftingTable(index))
     const onConfirm = () => dispatch(confirm())
+    const onPlay = () => {
+        dispatch(initializePlayer({ playerIndex: PlayerIndex.Player, gear: build1 }))
+        dispatch(initializePlayer({ playerIndex: PlayerIndex.Opponent, gear: build2 }))
+        dispatch(initializeTurn());
+        dispatch(startGame())
+    }
 
     return (
         <Container>
@@ -80,6 +74,7 @@ export const CraftingTable = () => {
             </Column>
             </Hand>
             <button onClick={onConfirm}>confirm</button>
+            <button onClick={onPlay}>play</button>
             </>)
             :
             (<>
@@ -94,6 +89,7 @@ export const CraftingTable = () => {
             </EthosContainer>
             <PlayerGear gear={playerGear}/>
             <button>clear</button>
+            <button onClick={onPlay}>play</button>
             </>)}
         </Container>
     )

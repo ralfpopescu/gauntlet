@@ -9,6 +9,8 @@ export type Event = { message: string, style: React.CSSProperties }
 
 export type SetPlayer = (player: Player) => void;
 
+export type StatsUpdate = Partial<{ [key in Stats] : number }>
+
 export type Slot = 'mainhand' | 'offhand' | 'chest' | 'head' | 'feet'
 
 export type Ethos = 'Tarcunia' | 'Visyk' | 'Rennti' | 'Morto' | 'Shii' | 'Parlis' | 'Lommam' | 'Eckao' | 'Lux'
@@ -43,6 +45,7 @@ export interface Gear {
     slot: Slot;
     description: string;
     effectDescription?: string;
+    id: number,
 }
 
 export interface Player {
@@ -52,9 +55,9 @@ export interface Player {
     armor: number;
     speed: number;
     critChance: number;
-    missChance: number;
+    accuracy: number;
     dodgeChance: number;
-    gear: Gear[]
+    gear: number[],
 }
 
 export type Stats = keyof Omit<Player, 'gear' | 'name'>

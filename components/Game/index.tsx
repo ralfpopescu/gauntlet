@@ -1,8 +1,17 @@
-import { useState } from "react";
-import { Player as PlayerType, Gear, Event } from '../../types-app'
+import { useAppDispatch, useAppSelector } from '../../redux'
+import { 
+    increaseRound, 
+    switchTurn, 
+    updatePlayerStats, 
+    applyDamageToPlayer,
+    recordEvent, 
+    PlayerIndex 
+} from '../../redux/slices/game'
+import { Event, StatsUpdate } from '../../types-app'
 import ReactInterval from "react-interval";
 import { Player } from '../Player'
 import { Events } from '../Events'
+import { gearIdsToGear } from '../../utils/recipes'
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -22,184 +31,57 @@ text-align: center;
 font-size: 32px;
 `
 
-const defaultPlayer: Omit<PlayerType, 'name'> = {
-    health: 10,
-    attack: 1,
-    armor: 1,
-    speed: 1,
-    missChance: .05,
-    critChance: .05,
-    dodgeChance: .05,
-    gear: [],
-}
-
-type SetPlayer = (player: PlayerType) => void;
-
-const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetPlayer): Event => {
-    const { armor, health } = player
-
-    let healthDamage = damage - armor;
-    if (healthDamage < 0) healthDamage = 0;
-
-    let newArmorValue = armor;
-
-    if(armor > 0) {
-        newArmorValue = armor - damage;
-        if (newArmorValue < 0) newArmorValue = 0;
-    }
-
-    player.armor = newArmorValue;
-    const newHealthValue = health - healthDamage;
-
-    const newPlayer = { ...player, armor: newArmorValue, health: newHealthValue }
-
-    setPlayer(newPlayer)
-    return { message: `${player.name} takes ${damage} damage, ${healthDamage} to their health.`, style: { color: 'blue'}}
-
-}
-
-
-type Turn = 0 | 1
-
-const switchTurn = (turn: Turn) => {
-    if(turn) return 0
-    return 1;
-}
-
-type Stats = keyof Omit<PlayerType, 'gear' | 'name'>
-
-const applyGearStatsToPlayer = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>): PlayerType => {
-    const statNames: Stats[] = Object.keys(stats) as Stats[]
-    const updatedPlayer = { ...player }
-    statNames.forEach((statName: Stats) => {
-        updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
-    })
-    return updatedPlayer;
-}
-
-const doNothing = () => null;
-
-const updatePlayerStats = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>, setPlayer: SetPlayer): void => {
-    const statNames: Stats[] = Object.keys(stats) as Stats[]
-    const updatedPlayer = { ...player }
-    statNames.forEach((statName: Stats) => {
-        updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
-    })
-    setPlayer(updatedPlayer)
-}
-
-const sword: Gear = {
-    onPlayerAttack: doNothing,
-    onOpponentAttack: doNothing,
-    statEffects: { attack: 1 },
-    name: 'sword',
-    slot: 'mainhand',
-    description: 'A simple sword that gets the job done.'
-}
-
-const shield: Gear = {
-    onPlayerAttack: doNothing,
-    onOpponentAttack: doNothing,
-    statEffects: { armor: 1 },
-    name: 'shield',
-    slot: 'offhand',
-    description: 'A small wooden shield of average craftsmanship.'
-}
-
-const megaSword: Gear = {
-    onPlayerAttack: doNothing,
-    onOpponentAttack: doNothing,
-    statEffects: { attack: 3 },
-    name: 'mega sword',
-    slot: 'mainhand',
-    description: 'A massive sword.'
-}
-
-const reflector: Gear = {
-    onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
-        updatePlayerStats(player, { attack: 1 }, setPlayer)
-        return { message: `${player.name} attack boosted by 1.`, style: {}}
-    },
-    onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
-        applyDamageToPlayer(opponent, 1, setOpponent)
-        return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
-    },
-    statEffects: { armor: 1, speed: 1 },
-    name: 'reflector',
-    slot: 'offhand',
-    description: 'A massive shield.'
-}
-
-const getInitialStats = (player: PlayerType) => {
-    const { gear } = player;
-    let allStatChanges = {}
-    let updatedPlayer = { ...player }
-    gear.forEach(g => {
-        allStatChanges = { ...allStatChanges, ...g.statEffects }
-    })
-    return applyGearStatsToPlayer(updatedPlayer, allStatChanges);
-}
-
 export const Game = () => {
-    const [player1, setPlayer1] = useState<PlayerType>({ 
-        ...getInitialStats({ ...defaultPlayer, gear: [sword, shield], name: 'Player1' }), 
-    })
-    const [player2, setPlayer2] = useState<PlayerType>({ 
-        ...getInitialStats({ ...defaultPlayer, gear: [megaSword, reflector], name: 'Player2' }), 
-    })
+    const round = useAppSelector(state => state.game.round);
+    const turn = useAppSelector(state => state.game.turn);
+    const events = useAppSelector(state => state.game.events);
+    const player = useAppSelector(state => state.game.player);
+    const opponent = useAppSelector(state => state.game.opponent);
 
-    const [playerTurn, setPlayerTurn] = useState<Turn>(player1.speed > player2.speed ? 1 : 0)
-    const [round, setRound] = useState<number>(0)
-    const [events, setEvents] = useState<Event[]>([])
+    const dispatch = useAppDispatch()
 
-    const attack = (
-        attackingPlayer: PlayerType, 
-        defendingPlayer: PlayerType,
-        setAttackingPlayer: SetPlayer,
-        setDefendingPlayer: SetPlayer,
-        ) => {
-        const attackEvent = { message: `${attackingPlayer.name} ' attacks!`, style: {color: 'red', marginTop: '8px'} }
-        setEvents(events => [...events, attackEvent])
+    const addEvent = (event: Event) => dispatch(recordEvent(event))
+    const setPlayer = (playerIndex: PlayerIndex) => (stats: StatsUpdate) => dispatch(updatePlayerStats({ stats, playerIndex }))
+    const nextRound = () => dispatch(increaseRound());
+    const turnSwitch = () => dispatch(switchTurn());
+    const applyDamage = (playerIndex: PlayerIndex, damage: number) => dispatch(applyDamageToPlayer({ playerIndex, damage }))
 
-        const attackerGear = attackingPlayer.gear;
-        const defendingGear = defendingPlayer.gear;
+    const attack = () => {
+        //if its turn 0, it's players turn, otherwise enemy
+        const defendingPlayerIndex = turn ? 0 : 1;
+
+        const attackingPlayer = turn ? opponent : player;
+        const defendingPlayer = turn ? player : opponent;
+        const setAttackingPlayer = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
+        const setDefendingPlayer = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
+
+        const attackEvent = { message: `${attackingPlayer.name} attacks!`, style: {color: 'red', marginTop: '8px'} }
+        addEvent(attackEvent)
     
-        attackerGear.forEach(gear => {
+        gearIdsToGear(attackingPlayer.gear).forEach(gear => {
             const event = gear.onPlayerAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
-            if(event) setEvents(events => [...events, event])
+            if(event) addEvent(event)
         })
     
-        defendingGear.forEach(gear => {
+        gearIdsToGear(defendingPlayer.gear).forEach(gear => {
             const event = gear.onOpponentAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
-            if(event) setEvents(events => [...events, event])
+            if(event) addEvent(event)
         })
     
         const attackingPlayerAttack = attackingPlayer.attack;
-    
-        const event = applyDamageToPlayer(defendingPlayer, attackingPlayerAttack, setDefendingPlayer)
-        if(event) setEvents(events => [...events, event])
+        applyDamage(defendingPlayerIndex, attackingPlayerAttack)
     }
 
     const gameLoop = () => {
-        const shouldGameContinue = round < 20 && player1.health > 0 && player2.health > 0
-
+        const shouldGameContinue = round < 20 && player.health > 0 && opponent.health > 0
 
         if(shouldGameContinue) {
-            const attackingPlayer = playerTurn ? player1 : player2;
-            const defendingPlayer = playerTurn ? player2 : player1;
-    
-            const setAttackingPlayer = playerTurn ? setPlayer1 : setPlayer2;
-            const setDefendingPlayer = playerTurn ? setPlayer2 : setPlayer1;
-    
-            attack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer)
-    
-            setPlayerTurn(switchTurn(playerTurn))
-            console.log(round, player1, player2)
-
-            setRound(round => (round + 1));
+            attack();
+            turnSwitch();
+            nextRound();
         } else {
-            const conclusionEvent = { message: `${player1.health < 0 ? player2.name : player1.name} wins!!`, style: { color: 'purple'}}
-            if(!events.find(event => event.message === conclusionEvent.message)) setEvents(events => [...events, conclusionEvent])
+            const conclusionEvent = { message: `${player.health < 0 ? opponent.name : player.name} wins!!`, style: { color: 'purple'}}
+            if(!events.find(event => event.message === conclusionEvent.message)) addEvent(conclusionEvent)
         }
     }
 
@@ -214,7 +96,7 @@ export const Game = () => {
         </GridArea>
 
         <GridArea name="player1">
-            <Player player={player1}/>
+            <Player player={player}/>
         </GridArea>
 
         <GridArea name="events">
@@ -222,10 +104,10 @@ export const Game = () => {
         </GridArea>
 
         <GridArea name="player2">
-         <Player player={player2}/>
+         <Player player={opponent}/>
         </GridArea>
 
-        <ReactInterval timeout={1000} enabled={round < 20 && player1.health > 0 && player2.health > 0}
+        <ReactInterval timeout={1000} enabled={round < 20 && player.health > 0 && opponent.health > 0}
           callback={gameLoop} />
 
       </Container>

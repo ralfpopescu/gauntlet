@@ -58,8 +58,8 @@ export const Player = ({ player }: { player: PlayerType}) => {
             <Stat key={`dodge-${player.dodgeChance}`}>
                 <Speed style={iconStyle}/>dodgeChance {player.dodgeChance}
             </Stat>
-            <Stat key={`accuracy-${player.missChance}`}>
-                <Accuracy style={iconStyle}/> missChance {player.missChance}
+            <Stat key={`accuracy-${player.accuracy}`}>
+                <Accuracy style={iconStyle}/> missChance {player.accuracy}
             </Stat>
         </Container>
     )
