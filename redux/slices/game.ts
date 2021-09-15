@@ -37,7 +37,7 @@ const initialState: GameState = {
 }
 
 
-type InitializePlayerInput = { gear: number[], playerIndex: PlayerIndex }
+type InitializePlayerInput = { gear: number[], playerIndex: PlayerIndex, name?: string }
 
 const applyDamageByPlayer = (player: PlayerType, damage: number): PlayerType => {
     const { armor, health } = player
@@ -101,8 +101,8 @@ export const appStateSlice = createSlice({
   initialState,
   reducers: {
     initializePlayer: (state, action: PayloadAction<InitializePlayerInput>) => {
-      const { gear, playerIndex } = action.payload;
-      const newPlayer = { ...state.player, gear }
+      const { gear, playerIndex, name } = action.payload;
+      const newPlayer = { ...state.player, gear, name: name || 'Player' }
       const playerWithAppliedStats = getInitialStats(newPlayer)
       if(playerIndex === PlayerIndex.Player) {
         state.player = playerWithAppliedStats;
@@ -129,7 +129,8 @@ export const appStateSlice = createSlice({
     },
     updatePlayerStats: (state, action: PayloadAction<UpdatePlayerStatsInput>) => {
         const player = getPlayerByIndex(state, action.payload.playerIndex)
-        const updatedPlayer = updateStatsByPlayer(player, action.payload.stats);
+        const updatedPlayer = { ...player, ...updateStatsByPlayer(player, action.payload.stats)};
+        console.log('player!!!', player, updatedPlayer)
         if(action.payload.playerIndex === PlayerIndex.Player) {
             state.player = updatedPlayer;
         } else {
@@ -143,8 +144,12 @@ export const appStateSlice = createSlice({
         console.log('updatedPlayer', updatedPlayer)
         if(action.payload.playerIndex === PlayerIndex.Player) {
             state.player = updatedPlayer;
+            const event = { message: `${player.name} took ${action.payload.damage} damage!`, style: {}}
+            state.events = [...state.events, event]
         } else {
             state.opponent = updatedPlayer;
+            const event = { message: `${state.opponent.name} took ${action.payload.damage} damage!`, style: {}}
+            state.events = [...state.events, event]
         }
     },
     recordEvent: (state, action: PayloadAction<Event>) => {

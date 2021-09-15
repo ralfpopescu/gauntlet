@@ -7,7 +7,11 @@ export interface PlayerState {
 
 export type Event = { message: string, style: React.CSSProperties }
 
+export type StatEffects = Partial<{[key in Stats] : number}>;
+
 export type SetPlayer = (player: Player) => void;
+
+export type SetPlayerStats = (stats: StatEffects) => void;
 
 export type StatsUpdate = Partial<{ [key in Stats] : number }>
 
@@ -23,21 +27,20 @@ export type Recipe = {
     upgrade: { requiredMetaEthos: MetaEthos['name'][], upgradedItem: Gear}
 }
 
-export type StatEffects = Partial<{[key in Stats] : number}>;
 
 export interface Gear {
     onPlayerAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
-        setAttackPlayer: SetPlayer,
-        setDefendingPlayer: SetPlayer,
+        setAttackPlayer: SetPlayerStats,
+        setDefendingPlayer: SetPlayerStats,
         round: number,
         ) => Event | null//message
     onOpponentAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
-        setAttackPlayer: SetPlayer,
-        setDefendingPlayer: SetPlayer,
+        setAttackPlayer: SetPlayerStats,
+        setDefendingPlayer: SetPlayerStats,
         round: number,
         ) => Event | null
     statEffects: StatEffects

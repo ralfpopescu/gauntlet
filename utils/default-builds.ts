@@ -3,13 +3,20 @@ import { Gear } from '../types-app'
 
 type Build = number[];
 
-const simpleShield = recipes.find(i => i.item.name === 'Simple Shield')?.item as Gear;
-const simpleSword = recipes.find(i => i.item.name === 'Simple Sword')?.item as Gear;
+const getItem = (name: string) => recipes.find(i => i.item.name === name)?.item as Gear;
+const getUpgradedItem = (name: string) => recipes.find(i => i.upgrade.upgradedItem.name === name)?.upgrade.upgradedItem as Gear;
 
-const sturdyShield = recipes.find(i => i.item.name === 'Simple Shield')?.upgrade.upgradedItem as Gear;
-const sharpSword = recipes.find(i => i.item.name === 'Simple Sword')?.upgrade.upgradedItem as Gear;
+const simpleShield = getItem('Simple Shield');
+const simpleSword =  getItem('Simple Sword');
+
+const sturdyShield = getUpgradedItem('Sturdy Shield');
+const sharpSword = getUpgradedItem('Sharp Sword');
+
+const bladeOfEnlightenment = getItem('Blade of Enlightenment');
+const burningShield = getItem('Burning Shield');
 
 export const build1: Build = [simpleShield.id, sharpSword.id];
-export const build2: Build = [sturdyShield.id, simpleSword.id];
+export const build2: Build = [bladeOfEnlightenment.id, burningShield.id];
+export const build3: Build = [sturdyShield.id, simpleSword.id];
 
 

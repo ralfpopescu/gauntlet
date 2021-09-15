@@ -52,8 +52,8 @@ export const Game = () => {
 
         const attackingPlayer = turn ? opponent : player;
         const defendingPlayer = turn ? player : opponent;
-        const setAttackingPlayer = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
-        const setDefendingPlayer = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
+        const setDefendingPlayer = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
+        const setAttackingPlayer = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
 
         const attackEvent = { message: `${attackingPlayer.name} attacks!`, style: {color: 'red', marginTop: '8px'} }
         addEvent(attackEvent)

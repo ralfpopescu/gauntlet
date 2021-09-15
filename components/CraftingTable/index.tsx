@@ -14,6 +14,7 @@ import { Gear } from '../../types-app'
 import { build1, build2 } from '../../utils/default-builds';
 import { MetaEthos, EmptyMetaEthos} from '../MetaEthos'
 import { PlayerGear } from '../PlayerGear'
+import { gearIdsToGear } from '../../utils/recipes';
 
 const Container = styled.div`
 display: grid;
@@ -49,8 +50,8 @@ export const CraftingTable = () => {
     const onMetaEthosInventoryClick = (index: number) => dispatch(putOnCraftingTable(index))
     const onConfirm = () => dispatch(confirm())
     const onPlay = () => {
-        dispatch(initializePlayer({ playerIndex: PlayerIndex.Player, gear: build1 }))
-        dispatch(initializePlayer({ playerIndex: PlayerIndex.Opponent, gear: build2 }))
+        dispatch(initializePlayer({ name: 'Player1', playerIndex: PlayerIndex.Player, gear: [...playerGear] }))
+        dispatch(initializePlayer({ name: 'Player2', playerIndex: PlayerIndex.Opponent, gear: build2 }))
         dispatch(initializeTurn());
         dispatch(startGame())
     }
@@ -87,7 +88,7 @@ export const CraftingTable = () => {
             <EthosContainer>
                 {craftingTable.map(ethos => ethos ? <MetaEthos ethos={ethos} /> : <EmptyMetaEthos />)}
             </EthosContainer>
-            <PlayerGear gear={playerGear}/>
+            <PlayerGear gear={gearIdsToGear(playerGear)}/>
             <button>clear</button>
             <button onClick={onPlay}>play</button>
             </>)}

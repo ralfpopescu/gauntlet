@@ -2,7 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 import { rollRandomEthos } from '../../utils/helpers'
 import { MetaEthos, MetaEthos as MetaEthosType } from '../../utils/ethos'
-import { Recipe, Gear } from '../../types-app'
+import { Recipe } from '../../types-app'
 
 type CraftingIngredientsState = {
     hand: MetaEthosType[],
@@ -11,7 +11,7 @@ type CraftingIngredientsState = {
     metaEthosInventory: Array<MetaEthos | null>,
     craftingTable: Array<MetaEthos | null>,
     confirmed: boolean,
-    playerGear: Gear[],
+    playerGear: number[],
 }
 
 //nulls represent empty slots
@@ -90,7 +90,7 @@ export const craftingSlice = createSlice({
     },
     craft: (state, action: PayloadAction<CraftInput>) => {
       const { recipe, upgrade } = action.payload
-      
+
       const requiredMetaEthos = upgrade ? 
       [...recipe.upgrade.requiredMetaEthos, ...recipe.requiredMetaEthos] : 
       recipe.requiredMetaEthos;
@@ -113,7 +113,7 @@ export const craftingSlice = createSlice({
           newCraftingTable[i] = null;
         })
         state.craftingTable = [...newCraftingTable]
-        state.playerGear = [...state.playerGear, gear]
+        state.playerGear = [...state.playerGear, gear.id]
       }
     },
   },
