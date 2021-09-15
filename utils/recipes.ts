@@ -293,6 +293,30 @@ export const recipes: Recipe[] = [
                 effectDescription: 'Hits an extra time on round 1.',
             }
         }
+    },
+    {
+        item: {
+            id: 13,
+            onPlayerAttack: doNothing,
+            onOpponentAttack: doNothing,
+            statEffects: { armor: 3 },
+            name: 'Wooden Helmet',
+            slot: 'head',
+            description: 'A simple helmet carved out of hardwood.',
+        },
+        requiredMetaEthos: ['Parlis'],
+        upgrade: {
+            requiredMetaEthos: ['Lux'],
+            upgradedItem: {
+                id: 14,
+                onPlayerAttack: doNothing,
+                onOpponentAttack: doNothing,
+                statEffects: { armor: 5, health: 1 },
+                name: 'Comfy Wooden Helmet',
+                slot: 'head',
+                description: 'Someone added a soft, wool interior to a clunky wooden helmet.',
+            }
+        }
     }
 ]
 
