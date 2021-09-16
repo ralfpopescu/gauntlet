@@ -6,7 +6,8 @@ import {
     applyDamageToPlayer,
     recordEvent, 
     updatePlayerStatus,
-    PlayerIndex 
+    PlayerIndex ,
+    updateStatsByPlayer,
 } from '../../redux/slices/game'
 import { Event, StatsUpdate, Status, Player as PlayerType } from '../../types-app'
 import { roll } from '../../utils/helpers'
@@ -15,6 +16,7 @@ import { Player } from '../Player'
 import { Events } from '../Events'
 import { gearIdsToGear } from '../../utils/recipes'
 import styled from "styled-components";
+import { Stats } from 'fs';
 
 const Container = styled.div`
 display: grid;
@@ -35,6 +37,19 @@ font-size: 32px;
 
 const applyBuffsAndDebuffsToPlayer = (player: PlayerType) => {
     const { status } = player;
+    let updatedPlayer = { ...player }
+
+    status.forEach(status => {
+        if(status.statusEffect === 'buff' || status.statusEffect === 'debuff') {
+            updatedPlayer = updateStatsByPlayer(updatedPlayer, status.meta)
+        }
+    })
+
+    return updatedPlayer;
+}
+
+const processStatusTurns = (player: PlayerType) => {
+    return player.status.filter(status => status.turnsLeft).map(status =>( { ...status, turnsLeft: status.turnsLeft - 1 }));
 }
 
 export const Game = () => {
@@ -60,11 +75,11 @@ export const Game = () => {
         const attackingPlayer = turn ? opponent : player;
         const defendingPlayer = turn ? player : opponent;
 
-        const alterDefenderStats = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
         const alterPlayerStats = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
+        const alterDefenderStats = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
 
-        const setAttackerStatus = turn ? setPlayerStatus(PlayerIndex.Player) : setPlayerStatus(PlayerIndex.Opponent);
-        const setDefenderStatus = turn ? setPlayerStatus(PlayerIndex.Opponent) : setPlayerStatus(PlayerIndex.Player);
+        const setAttackerStatus = turn ? setPlayerStatus(PlayerIndex.Opponent) : setPlayerStatus(PlayerIndex.Player);
+        const setDefenderStatus = turn ? setPlayerStatus(PlayerIndex.Player) : setPlayerStatus(PlayerIndex.Opponent);
 
         const attackEvent = { message: `${attackingPlayer.name} attacks!`, style: {color: 'red', marginTop: '8px'} }
         addEvent(attackEvent)
@@ -95,11 +110,17 @@ export const Game = () => {
             if(event) addEvent(event)
         })
 
-        const missRoll = !roll(attackingPlayer.accuracy);
-        const dodgeRoll = roll(defendingPlayer.dodgeChance);
-        const critRoll = roll(attackingPlayer.critChance);
+        const attackingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(attackingPlayer);
+        const defendingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(defendingPlayer);
+
+        const missRoll = !roll(attackingPlayerWithStatus.accuracy);
+        const dodgeRoll = roll(defendingPlayerWithStatus.dodgeChance);
+        const critRoll = roll(attackingPlayerWithStatus.critChance);
+
+        const newStatus = processStatusTurns(attackingPlayer);
+        setAttackerStatus(newStatus);
         
-        const attackingPlayerAttack = critRoll ? attackingPlayer.attack * 2 : attackingPlayer.attack;
+        const attackingPlayerAttack = critRoll ? attackingPlayerWithStatus.attack * 2 : attackingPlayerWithStatus.attack;
         if(!missRoll && !dodgeRoll) {
             applyDamage(defendingPlayerIndex, attackingPlayerAttack)
         } else {

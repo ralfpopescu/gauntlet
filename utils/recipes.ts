@@ -78,7 +78,6 @@ export const recipes: Recipe[] = [
             id: 4000,
             onPlayerAttack: doNothing,
             onOpponentAttack: (player, opponent, alterPlayerStats, alterOpponentStats) => {
-                 console.log('somethingshouldhappenhere!!')
                 alterOpponentStats(distributeDamage(opponent, 1))
                 return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
             },

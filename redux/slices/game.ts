@@ -83,11 +83,14 @@ const getInitialStats = (player: PlayerType): PlayerType => {
     return applyGearStatsToPlayer(updatedPlayer, allStatChanges);
 }
 
-const updateStatsByPlayer = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>): PlayerType => {
+export const updateStatsByPlayer = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>): PlayerType => {
     const statNames: Stats[] = Object.keys(stats) as Stats[]
     const updatedPlayer = { ...player }
     statNames.forEach((statName: Stats) => {
-        updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
+        let newStat = player[statName] + (stats[statName] || 0)
+        if (newStat < 0) newStat = 0;
+
+        updatedPlayer[statName] = newStat;
     })
     return updatedPlayer;
 }
