@@ -5,9 +5,11 @@ import {
     updatePlayerStats, 
     applyDamageToPlayer,
     recordEvent, 
+    updatePlayerStatus,
     PlayerIndex 
 } from '../../redux/slices/game'
-import { Event, StatsUpdate } from '../../types-app'
+import { Event, StatsUpdate, Status, Player as PlayerType } from '../../types-app'
+import { roll } from '../../utils/helpers'
 import ReactInterval from "react-interval";
 import { Player } from '../Player'
 import { Events } from '../Events'
@@ -31,6 +33,10 @@ text-align: center;
 font-size: 32px;
 `
 
+const applyBuffsAndDebuffsToPlayer = (player: PlayerType) => {
+    const { status } = player;
+}
+
 export const Game = () => {
     const round = useAppSelector(state => state.game.round);
     const turn = useAppSelector(state => state.game.turn);
@@ -42,6 +48,7 @@ export const Game = () => {
 
     const addEvent = (event: Event) => dispatch(recordEvent(event))
     const setPlayer = (playerIndex: PlayerIndex) => (stats: StatsUpdate) => dispatch(updatePlayerStats({ stats, playerIndex }))
+    const setPlayerStatus = (playerIndex: PlayerIndex) => (status: Status[]) => dispatch(updatePlayerStatus({ status, playerIndex }))
     const nextRound = () => dispatch(increaseRound());
     const turnSwitch = () => dispatch(switchTurn());
     const applyDamage = (playerIndex: PlayerIndex, damage: number) => dispatch(applyDamageToPlayer({ playerIndex, damage }))
@@ -52,24 +59,58 @@ export const Game = () => {
 
         const attackingPlayer = turn ? opponent : player;
         const defendingPlayer = turn ? player : opponent;
-        const setDefendingPlayer = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
-        const setAttackingPlayer = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
+
+        const alterDefenderStats = turn ? setPlayer(PlayerIndex.Player) : setPlayer(PlayerIndex.Opponent);
+        const alterPlayerStats = turn ? setPlayer(PlayerIndex.Opponent) : setPlayer(PlayerIndex.Player);
+
+        const setAttackerStatus = turn ? setPlayerStatus(PlayerIndex.Player) : setPlayerStatus(PlayerIndex.Opponent);
+        const setDefenderStatus = turn ? setPlayerStatus(PlayerIndex.Opponent) : setPlayerStatus(PlayerIndex.Player);
 
         const attackEvent = { message: `${attackingPlayer.name} attacks!`, style: {color: 'red', marginTop: '8px'} }
         addEvent(attackEvent)
     
         gearIdsToGear(attackingPlayer.gear).forEach(gear => {
-            const event = gear.onPlayerAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
+            const event = gear.onPlayerAttack(
+                attackingPlayer, 
+                defendingPlayer, 
+                alterPlayerStats, 
+                alterDefenderStats, 
+                setAttackerStatus,
+                setDefenderStatus,
+                round,
+                )
             if(event) addEvent(event)
         })
     
         gearIdsToGear(defendingPlayer.gear).forEach(gear => {
-            const event = gear.onOpponentAttack(attackingPlayer, defendingPlayer, setAttackingPlayer, setDefendingPlayer, round)
+            const event = gear.onOpponentAttack(
+                attackingPlayer, 
+                defendingPlayer, 
+                alterPlayerStats, 
+                alterDefenderStats, 
+                setAttackerStatus,
+                setDefenderStatus,
+                round,
+                )
             if(event) addEvent(event)
         })
-    
-        const attackingPlayerAttack = attackingPlayer.attack;
-        applyDamage(defendingPlayerIndex, attackingPlayerAttack)
+
+        const missRoll = !roll(attackingPlayer.accuracy);
+        const dodgeRoll = roll(defendingPlayer.dodgeChance);
+        const critRoll = roll(attackingPlayer.critChance);
+        
+        const attackingPlayerAttack = critRoll ? attackingPlayer.attack * 2 : attackingPlayer.attack;
+        if(!missRoll && !dodgeRoll) {
+            applyDamage(defendingPlayerIndex, attackingPlayerAttack)
+        } else {
+            if(missRoll) {
+                const missEvent = { message: `${attackingPlayer.name} misses!`, style: {color: 'purple' } }
+                addEvent(missEvent)
+            } else if (dodgeRoll) {
+                const dodgeEvent = { message: `${defendingPlayer.name} dodges!`, style: {color: 'purple' } }
+                addEvent(dodgeEvent)
+            } else {}
+        }
     }
 
     const gameLoop = () => {

@@ -1,6 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { Player as PlayerType, Gear, Stats, Event, StatsUpdate } from '../../types-app'
+import { Player as PlayerType, Gear, Stats, Event, StatsUpdate, Status } from '../../types-app'
 import { gearIdsToGear } from '../../utils/recipes'
+import { randomName } from '../../utils/default-builds'
 
 export enum PlayerIndex {
     Player,
@@ -17,6 +18,7 @@ const defaultPlayer: PlayerType = {
     critChance: .05,
     dodgeChance: .05,
     gear: [],
+    status: [],
     name: '',
 }
 
@@ -28,16 +30,16 @@ type GameState = {
     events: Event[],
 }
 
-const initialState: GameState = {
-    player: { ...defaultPlayer },
-    opponent: { ...defaultPlayer },
+const getInitialState: () => GameState = () => ({
+    player: { ...defaultPlayer, name: randomName() },
+    opponent: { ...defaultPlayer, name: randomName() },
     round: 0,
     turn: 0,
     events: [],
-}
+})
 
 
-type InitializePlayerInput = { gear: number[], playerIndex: PlayerIndex, name?: string }
+type InitializePlayerInput = { gear?: number[], playerIndex: PlayerIndex, name?: string }
 
 const applyDamageByPlayer = (player: PlayerType, damage: number): PlayerType => {
     const { armor, health } = player
@@ -74,6 +76,7 @@ const getInitialStats = (player: PlayerType): PlayerType => {
     
     let allStatChanges = {}
     let updatedPlayer = { ...player }
+    console.log('updatedPlayerupdatedPlayer', updatedPlayer)
     gear.forEach(g => {
         allStatChanges = { ...allStatChanges, ...g.statEffects }
     })
@@ -90,6 +93,7 @@ const updateStatsByPlayer = (player: PlayerType, stats: Partial<{ [key in Stats]
 }
 
 type UpdatePlayerStatsInput = { stats: StatsUpdate, playerIndex: PlayerIndex }
+type UpdatePlayerStatusInput = { status: Status[], playerIndex: PlayerIndex }
 
 const getPlayerByIndex = (state: GameState, index: PlayerIndex) => {
     if(index === PlayerIndex.Player) return state.player;
@@ -98,12 +102,17 @@ const getPlayerByIndex = (state: GameState, index: PlayerIndex) => {
 
 export const appStateSlice = createSlice({
   name: 'appState',
-  initialState,
+  initialState: getInitialState(),
   reducers: {
     initializePlayer: (state, action: PayloadAction<InitializePlayerInput>) => {
       const { gear, playerIndex, name } = action.payload;
-      const newPlayer = { ...state.player, gear, name: name || 'Player' }
+      const playerToAlter = getPlayerByIndex(state, playerIndex)
+      const newPlayer = { ...playerToAlter, name: name || 'Player' }
+
+      if(gear) newPlayer.gear = gear;
+
       const playerWithAppliedStats = getInitialStats(newPlayer)
+
       if(playerIndex === PlayerIndex.Player) {
         state.player = playerWithAppliedStats;
       } else {
@@ -137,6 +146,13 @@ export const appStateSlice = createSlice({
             state.opponent = updatedPlayer;
         }
     },
+    updatePlayerStatus: (state, action: PayloadAction<UpdatePlayerStatusInput>) => {
+        if(action.payload.playerIndex === PlayerIndex.Player) {
+            state.player.status = action.payload.status;
+        } else {
+            state.opponent.status = action.payload.status;
+        }
+    },
     applyDamageToPlayer: (state, action: PayloadAction<{ playerIndex: PlayerIndex, damage: number}>) => {
         console.log('here')
         const player = getPlayerByIndex(state, action.payload.playerIndex)
@@ -164,6 +180,7 @@ export const {
     increaseRound, 
     switchTurn, 
     updatePlayerStats, 
+    updatePlayerStatus,
     applyDamageToPlayer, 
     recordEvent,
  } = appStateSlice.actions

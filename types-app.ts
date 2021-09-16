@@ -4,6 +4,8 @@ export interface PlayerState {
     player1: Player;
     player2: Player;
 }
+export type Stats = keyof Omit<Player, 'gear' | 'name' | 'status'>
+
 
 export type Event = { message: string, style: React.CSSProperties }
 
@@ -11,13 +13,27 @@ export type StatEffects = Partial<{[key in Stats] : number}>;
 
 export type SetPlayer = (player: Player) => void;
 
-export type SetPlayerStats = (stats: StatEffects) => void;
+export type SetPlayerStatus = (status: Status[]) => void;
+
+export type AlterPlayerStats = (stats: StatEffects) => void;
 
 export type StatsUpdate = Partial<{ [key in Stats] : number }>
 
 export type Slot = 'mainhand' | 'offhand' | 'chest' | 'head' | 'feet'
 
 export type Ethos = 'Tarcunia' | 'Visyk' | 'Rennti' | 'Morto' | 'Shii' | 'Parlis' | 'Lommam' | 'Eckao' | 'Lux'
+
+export type StatusEffect = 'buff' | 'debuff' | 'poison' | 'stunned'
+
+export type BuffMeta = StatEffects;
+
+export type SeverityMeta = { severity: number };
+
+export type Status = { turnsLeft: number, statusEffect: 'buff', meta: BuffMeta } |
+{ turnsLeft: number, statusEffect: 'debuff', meta: BuffMeta } | 
+{ turnsLeft: number, statusEffect: 'poison', meta: SeverityMeta } | 
+{ turnsLeft: number, statusEffect: 'stunned' }
+
 
 export type MetaEthos = { name: Ethos, values: string[], color: string }
 
@@ -32,15 +48,19 @@ export interface Gear {
     onPlayerAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
-        setAttackPlayer: SetPlayerStats,
-        setDefendingPlayer: SetPlayerStats,
+        alterPlayerStats: AlterPlayerStats,
+        alterDefenderStats: AlterPlayerStats,
+        setPlayerStatus: SetPlayerStatus,
+        setDefenderStatus: SetPlayerStatus,
         round: number,
         ) => Event | null//message
     onOpponentAttack: (
         attackingPlayer: Player, 
         defendingPlayer: Player, 
-        setAttackPlayer: SetPlayerStats,
-        setDefendingPlayer: SetPlayerStats,
+        alterPlayerStats: AlterPlayerStats,
+        alterDefenderStats: AlterPlayerStats,
+        setPlayerStatus: SetPlayerStatus,
+        setDefenderStatus: SetPlayerStatus,
         round: number,
         ) => Event | null
     statEffects: StatEffects
@@ -61,7 +81,7 @@ export interface Player {
     accuracy: number;
     dodgeChance: number;
     gear: number[],
+    status: Status[],
 }
 
-export type Stats = keyof Omit<Player, 'gear' | 'name'>
 
