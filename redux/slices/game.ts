@@ -142,7 +142,6 @@ export const appStateSlice = createSlice({
     updatePlayerStats: (state, action: PayloadAction<UpdatePlayerStatsInput>) => {
         const player = getPlayerByIndex(state, action.payload.playerIndex)
         const updatedPlayer = { ...player, ...updateStatsByPlayer(player, action.payload.stats)};
-        console.log('player!!!', player, updatedPlayer)
         if(action.payload.playerIndex === PlayerIndex.Player) {
             state.player = updatedPlayer;
         } else {
@@ -150,17 +149,17 @@ export const appStateSlice = createSlice({
         }
     },
     updatePlayerStatus: (state, action: PayloadAction<UpdatePlayerStatusInput>) => {
+        console.log('updatedstatus', state, action.payload)
         if(action.payload.playerIndex === PlayerIndex.Player) {
-            state.player.status = action.payload.status;
+            state.player = { ...state.player, status: action.payload.status};
         } else {
-            state.opponent.status = action.payload.status;
+            state.opponent = { ...state.opponent, status: action.payload.status};
         }
+        console.log('updatedstatus!', state.player)
     },
     applyDamageToPlayer: (state, action: PayloadAction<{ playerIndex: PlayerIndex, damage: number}>) => {
-        console.log('here')
         const player = getPlayerByIndex(state, action.payload.playerIndex)
         const updatedPlayer = applyDamageByPlayer(player, action.payload.damage);
-        console.log('updatedPlayer', updatedPlayer)
         if(action.payload.playerIndex === PlayerIndex.Player) {
             state.player = updatedPlayer;
             const event = { message: `${player.name} took ${action.payload.damage} damage!`, style: {}}

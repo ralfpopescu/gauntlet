@@ -37,6 +37,7 @@ font-size: 32px;
 
 const applyBuffsAndDebuffsToPlayer = (player: PlayerType) => {
     const { status } = player;
+    console.log('applyBuffsAndDebuffsToPlayer', player, status)
     let updatedPlayer = { ...player }
 
     status.forEach(status => {
@@ -111,6 +112,9 @@ export const Game = () => {
         })
 
         const attackingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(attackingPlayer);
+        if(!turn) {
+            console.log('attackingPlayerWithStatus!!', attackingPlayerWithStatus)
+        }
         const defendingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(defendingPlayer);
 
         const missRoll = !roll(attackingPlayerWithStatus.accuracy);
@@ -118,7 +122,12 @@ export const Game = () => {
         const critRoll = roll(attackingPlayerWithStatus.critChance);
 
         const newStatus = processStatusTurns(attackingPlayer);
+        if(!turn) {
+            console.log('newStatus!!', newStatus)
+        }
+       
         setAttackerStatus(newStatus);
+
         
         const attackingPlayerAttack = critRoll ? attackingPlayerWithStatus.attack * 2 : attackingPlayerWithStatus.attack;
         if(!missRoll && !dodgeRoll) {

@@ -179,9 +179,11 @@ export const recipes: Recipe[] = [
         item: {
             id: 9,
             onPlayerAttack: (player, opponent, alterPlayerStats, alterOpponentStats, setPlayerStatus, setOpponentStatus, round) => {
-                const shouldHeal = roll(.4);
+                const shouldHeal = roll(1);
                 if(shouldHeal) {
+                    console.log('player.attack')
                     alterOpponentStats({ health: player.attack });
+                    console.log('opponentopponent', opponent)
                     //hack to make the players attack not do anything
                     setPlayerStatus([ ...player.status, { turnsLeft: 0, statusEffect: 'debuff', meta: { attack: 0 - player.attack }}])
                     return { message: `Oops! The Chaos Wand healed ${opponent.name} instead of damaging.`, style: { color: 'green' }}
