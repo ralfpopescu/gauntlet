@@ -6,6 +6,8 @@ import { ReactComponent as Armor } from '../../assets/shield.svg'
 import { ReactComponent as Attack } from '../../assets/sword.svg'
 import { ReactComponent as Crit } from '../../assets/explosion.svg'
 import { ReactComponent as Accuracy } from '../../assets/darts.svg'
+import { PlayerGear } from '../PlayerGear'
+import { gearIdsToGear  } from '../../utils/recipes'
 
 const Container = styled.div`
 display: flex;
@@ -58,9 +60,10 @@ export const Player = ({ player }: { player: PlayerType}) => {
             <Stat key={`dodge-${player.dodgeChance}`}>
                 <Speed style={iconStyle}/>dodgeChance {player.dodgeChance}
             </Stat>
-            <Stat key={`accuracy-${player.missChance}`}>
-                <Accuracy style={iconStyle}/> missChance {player.missChance}
+            <Stat key={`accuracy-${player.accuracy}`}>
+                <Accuracy style={iconStyle}/> missChance {player.accuracy}
             </Stat>
+            <PlayerGear gear={gearIdsToGear(player.gear)}/>
         </Container>
     )
 }

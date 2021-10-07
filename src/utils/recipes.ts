@@ -1,4 +1,4 @@
-import { Gear, Player as PlayerType, SetPlayer, Event } from '../types-app'
+import { Gear, Player as PlayerType } from '../types-app'
 import { MetaEthos } from './ethos'
 import { randomNumber } from './helpers'
 
@@ -14,56 +14,22 @@ export type Recipe = {
     upgrade: { requiredMetaEthos: MetaEthos['name'][], upgradedItem: Gear}
 }
 
-type Stats = keyof Omit<PlayerType, 'gear' | 'name'>
-
-const applyGearStatsToPlayer = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>): PlayerType => {
-    const statNames: Stats[] = Object.keys(stats) as Stats[]
-    const updatedPlayer = { ...player }
-    statNames.forEach((statName: Stats) => {
-        updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
-    })
-    return updatedPlayer;
+const distributeDamage = (player: PlayerType, damage: number) => {
+    const { armor } = player;
+    const healthDamage = armor % damage;
+    const armorDamage = armor >= damage ? damage : armor;
+    return { health: player.health - healthDamage, armor: player.armor - armorDamage }
 }
 
 const doNothing = () => null;
 
-const updatePlayerStats = (player: PlayerType, stats: Partial<{ [key in Stats] : number }>, setPlayer: SetPlayer): void => {
-    const statNames: Stats[] = Object.keys(stats) as Stats[]
-    const updatedPlayer = { ...player }
-    statNames.forEach((statName: Stats) => {
-        updatedPlayer[statName] = player[statName] + (stats[statName] || 0)
-    })
-    setPlayer(updatedPlayer)
-}
-
-const applyDamageToPlayer = (player: PlayerType, damage: number, setPlayer: SetPlayer): Event => {
-    const { armor, health } = player
-
-    let healthDamage = damage - armor;
-    if (healthDamage < 0) healthDamage = 0;
-
-    let newArmorValue = armor;
-
-    if(armor > 0) {
-        newArmorValue = armor - damage;
-        if (newArmorValue < 0) newArmorValue = 0;
-    }
-
-    player.armor = newArmorValue;
-    const newHealthValue = health - healthDamage;
-
-    const newPlayer = { ...player, armor: newArmorValue, health: newHealthValue }
-
-    setPlayer(newPlayer)
-    return { message: `${player.name} takes ${damage} damage, ${healthDamage} to their health.`, style: { color: 'blue'}}
-
-}
 
 export const recipes: Recipe[] = [
     {
         item: {
-            onPlayerAttack: doNothing,
-            onOpponentAttack: doNothing,
+            id: 1,
+            onAttack: doNothing,
+            onDefend: doNothing,
             statEffects: { attack: 1 },
             name: 'Simple Sword',
             slot: 'mainhand',
@@ -73,8 +39,9 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Rennti'],
             upgradedItem: {
-                onPlayerAttack: doNothing,
-                onOpponentAttack: doNothing,
+                id: 2,
+                onAttack: doNothing,
+                onDefend: doNothing,
                 statEffects: { attack: 3 },
                 name: 'Sharp Sword',
                 slot: 'mainhand',
@@ -84,8 +51,9 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: doNothing,
-            onOpponentAttack: doNothing,
+            id: 3,
+            onAttack: doNothing,
+            onDefend: doNothing,
             statEffects: { armor: 1 },
             name: 'Simple Shield',
             slot: 'offhand',
@@ -95,9 +63,10 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Eckao'],
             upgradedItem: {
-                onPlayerAttack: doNothing,
-                onOpponentAttack: doNothing,
-                statEffects: { attack: 3 },
+                id: 4,
+                onAttack: doNothing,
+                onDefend: doNothing,
+                statEffects: { armor: 3 },
                 name: 'Sturdy Shield',
                 slot: 'offhand',
                 description: 'A small wooden shield that has been fortified with metal.'
@@ -106,10 +75,12 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: doNothing,
-            onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
-                applyDamageToPlayer(opponent, 1, setOpponent)
-                return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
+            id: 4000,
+            onAttack: doNothing,
+            onDefend: ({ attackingPlayer, defendingPlayer }) => {
+                const updatedAttackingPlayer = { ...attackingPlayer, ...distributeDamage(attackingPlayer, 1) }
+                const events = [{ message: `${defendingPlayer.name} reflected 1 damage back to ${attackingPlayer.name}!`, style: {}}]
+                return { events, updatedAttackingPlayer, updatedDefendingPlayer: defendingPlayer }
             },
             statEffects: { armor: 1, speed: 1 },
             name: 'Burning Shield',
@@ -121,10 +92,12 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Lux'],
             upgradedItem: {
-                onPlayerAttack: doNothing,
-                onOpponentAttack: (player, opponent, setPlayer, setOpponent) => {
-                    applyDamageToPlayer(opponent, 2, setOpponent)
-                    return { message: `${opponent.name} reflected 1 damage back to ${player.name}!`, style: {}}
+                id: 5,
+                onAttack: doNothing,
+                onDefend: ({ attackingPlayer, defendingPlayer }) => {
+                    const updatedAttackingPlayer = { ...attackingPlayer, ...distributeDamage(attackingPlayer, 2) }
+                    const events = [{ message: `${defendingPlayer.name} reflected 2 damage back to ${attackingPlayer.name}!`, style: {}}]
+                    return { events, updatedAttackingPlayer, updatedDefendingPlayer: defendingPlayer }
                 },
                 statEffects: { armor: 1, speed: 1 },
                 name: 'Sun Shield of Blinding',
@@ -136,12 +109,17 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
-                updatePlayerStats(player, { attack: 1 }, setPlayer)
-                return { message: `${player.name} attack boosted by 1.`, style: {}}
+            id: 6,
+            onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                const updatedAttackingPlayer = ({ ...attackingPlayer, attack: attackingPlayer.attack + 1 })
+                return { 
+                    updatedAttackingPlayer,
+                    updatedDefendingPlayer: defendingPlayer,
+                    events: [{ message: `${attackingPlayer.name} attack boosted by 1.`, style: {}}]
+                }
             },
-            onOpponentAttack: doNothing,
-            statEffects: { armor: 1, speed: 1 },
+            onDefend: doNothing,
+            statEffects: { attack: 1 },
             name: 'Blade of Enlightenment',
             slot: 'mainhand',
             description: 'A powerful sword that brings mental clarity to any wielder.',
@@ -151,12 +129,17 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Morto', 'Morto'],
             upgradedItem: {
-                onPlayerAttack: (player, opponent, setPlayer, setOpponent) => {
-                    updatePlayerStats(player, { attack: 1 }, setPlayer)
-                    return { message: `${player.name} attack boosted by 1.`, style: {}}
+                id: 7,
+                onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                    const updatedAttackingPlayer = ({ ...attackingPlayer, attack: attackingPlayer.attack + 2 })
+                    return { 
+                        updatedAttackingPlayer,
+                        updatedDefendingPlayer: defendingPlayer,
+                        events: [{ message: `${attackingPlayer.name} attack boosted by 2.`, style: {}}]
+                    }
                 },
-                onOpponentAttack: doNothing,
-                statEffects: { armor: 1, speed: 1 },
+                onDefend: doNothing,
+                statEffects: { attack: 1 },
                 name: 'Halcyon',
                 slot: 'mainhand',
                 description: 'A blade wielded by users who knew too much.',
@@ -166,14 +149,16 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
-                if(opponent.armor) {
-                    updatePlayerStats(opponent, { armor: 0 }, setOpponent)
-                    return { message: `Smashed all of ${opponent.name} 's armor!`, style: {}}
+            id: 8,
+            onAttack: ({ attackingPlayer, defendingPlayer, round }) => {
+                if(defendingPlayer.armor) {
+                    const updatedDefendingPlayer = ({ ...defendingPlayer, armor: 0 })
+                    const events = [{ message: `Smashed all of ${defendingPlayer.name}'s armor!`, style: {}}]
+                    return { updatedAttackingPlayer: attackingPlayer, updatedDefendingPlayer, events }
                 }
                 return null;
             },
-            onOpponentAttack: doNothing,
+            onDefend: doNothing,
             statEffects: { attack: -3 },
             name: 'Mountain Hammer',
             slot: 'mainhand',
@@ -184,11 +169,16 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Morto'],
             upgradedItem: {
-                onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
-                    updatePlayerStats(player, { attack: 1 }, setPlayer)
-                    return { message: `${player.name} attack boosted by 1.`, style: {}}
+                id: 8,
+                onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                    if(defendingPlayer.armor) {
+                        const updatedDefendingPlayer = ({ ...defendingPlayer, armor: 0 })
+                        const events = [{ message: `Smashed all of ${defendingPlayer.name}'s armor!`, style: {}}]
+                        return { updatedAttackingPlayer: attackingPlayer, updatedDefendingPlayer, events }
+                    }
+                    return null;
                 },
-                onOpponentAttack: doNothing,
+                onDefend: doNothing,
                 statEffects: { armor: 1, speed: 1 },
                 name: 'The Heavylight',
                 slot: 'mainhand',
@@ -199,15 +189,25 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
-                const shouldHeal = roll(.4);
+            id: 9,
+            onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                const shouldHeal = roll(1);
                 if(shouldHeal) {
-                    setOpponent({ ...opponent, health: opponent.health + player.attack});
-                    return { message: `Oops! The Chaos Wand healed ${opponent.name} instead of damaging.`, style: { color: 'green' }}
+                    //hack to make the players attack not do anything
+                    const updatedAttackingPlayerStatus = ([ ...attackingPlayer.status, { turnsLeft: 0, statusEffect: 'debuff' as 'debuff', meta: { attack: 0 - attackingPlayer.attack }}])
+                    const updatedDefendingPlayer = ({ 
+                        ...defendingPlayer, 
+                        health: defendingPlayer.health + attackingPlayer.attack });
+                    const updatedAttackingPlayer = {
+                        ...attackingPlayer,
+                        status: updatedAttackingPlayerStatus,
+                    }
+                    const events = [{ message: `Oops! The Chaos Wand healed ${defendingPlayer.name} instead of damaging.`, style: { color: 'green' }}]
+                    return { events, updatedDefendingPlayer, updatedAttackingPlayer }
                 }
                 return null;
             },
-            onOpponentAttack: doNothing,
+            onDefend: doNothing,
             statEffects: { attack: 6 },
             name: 'Chaos Wand',
             slot: 'mainhand',
@@ -218,15 +218,26 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Parlis'],
             upgradedItem: {
-                onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
+                id: 10,
+                onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                    //upgraded has lower chance to heal
                     const shouldHeal = roll(.2);
                     if(shouldHeal) {
-                        setOpponent({ ...opponent, health: opponent.health + player.attack});
-                        return { message: `Oops! The Chaos Wand healed ${opponent.name} instead of damaging.`, style: { color: 'green' }}
+                        //hack to make the players attack not do anything
+                        const updatedAttackingPlayerStatus = ([ ...attackingPlayer.status, { turnsLeft: 0, statusEffect: 'debuff' as 'debuff', meta: { attack: 0 - attackingPlayer.attack }}])
+                        const updatedDefendingPlayer = ({ 
+                            ...defendingPlayer, 
+                            health: defendingPlayer.health + attackingPlayer.attack });
+                        const updatedAttackingPlayer = {
+                            ...attackingPlayer,
+                            status: updatedAttackingPlayerStatus,
+                        }
+                        const events = [{ message: `Oops! The Chaos Wand healed ${defendingPlayer.name} instead of damaging.`, style: { color: 'green' }}]
+                        return { events, updatedDefendingPlayer, updatedAttackingPlayer }
                     }
                     return null;
                 },
-                onOpponentAttack: doNothing,
+                onDefend: doNothing,
                 statEffects: { attack: 6, health: 1 },
                 name: 'Forgiver',
                 slot: 'mainhand',
@@ -237,15 +248,17 @@ export const recipes: Recipe[] = [
     },
     {
         item: {
-            onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
+            id: 11,
+            onAttack: ({ attackingPlayer, defendingPlayer, round }) => {
                 const extraHit = roll(.5);
                 if(extraHit && round === 0) {
-                    setOpponent({ ...opponent, health: opponent.health - player.attack});
-                    return { message: `${player.name} struck an extra time!`, style: { color: 'green' }}
+                    const updatedDefendingPlayer = ({ ...defendingPlayer, health: defendingPlayer.health - attackingPlayer.attack});
+                    const events = [{ message: `${attackingPlayer.name} struck an extra time!`, style: { color: 'green' }}]
+                    return { updatedAttackingPlayer: attackingPlayer, updatedDefendingPlayer, events }
                 }
                 return null;
             },
-            onOpponentAttack: doNothing,
+            onDefend: doNothing,
             statEffects: { attack: 3 },
             name: 'Dirty Shiv',
             slot: 'mainhand',
@@ -256,11 +269,13 @@ export const recipes: Recipe[] = [
         upgrade: {
             requiredMetaEthos: ['Parlis'],
             upgradedItem: {
-                onPlayerAttack: (player, opponent, setPlayer, setOpponent, round) => {
-                    setOpponent({ ...opponent, health: opponent.health - player.attack});
-                    return { message: `${player.name} struck an extra time!`, style: { color: 'green' }}
+                id: 12,
+                onAttack: ({ attackingPlayer, defendingPlayer }) => {
+                    const updatedDefendingPlayer = ({ ...defendingPlayer, health: defendingPlayer.health - attackingPlayer.attack});
+                    const events = [{ message: `${attackingPlayer.name} struck an extra time!`, style: { color: 'green' }}]
+                    return { updatedAttackingPlayer: attackingPlayer, updatedDefendingPlayer, events }
                 },
-                onOpponentAttack: doNothing,
+                onDefend: doNothing,
                 statEffects: { attack: 3, speed: 1 },
                 name: 'Silent Silver',
                 slot: 'mainhand',
@@ -268,5 +283,38 @@ export const recipes: Recipe[] = [
                 effectDescription: 'Hits an extra time on round 1.',
             }
         }
-    }
+    },
+    {
+        item: {
+            id: 13,
+            onAttack: doNothing,
+            onDefend: doNothing,
+            statEffects: { armor: 3 },
+            name: 'Wooden Helmet',
+            slot: 'head',
+            description: 'A simple helmet carved out of hardwood.',
+        },
+        requiredMetaEthos: ['Parlis'],
+        upgrade: {
+            requiredMetaEthos: ['Lux'],
+            upgradedItem: {
+                id: 14,
+                onAttack: doNothing,
+                onDefend: doNothing,
+                statEffects: { armor: 5, health: 1 },
+                name: 'Comfy Wooden Helmet',
+                slot: 'head',
+                description: 'Someone added a soft, wool interior to a clunky wooden helmet.',
+            }
+        }
+    },
 ]
+
+export const gearIdsToGear = (gearIds: number[]): Gear[] => gearIds.map(gearId => {
+    const recipe = recipes.find(r => r.item.id === gearId || r.upgrade.upgradedItem.id === gearId);
+    const item = recipe?.item;
+    const upgradedItem = recipe?.upgrade.upgradedItem;
+
+    if(item?.id === gearId) return item;
+    return upgradedItem;
+}).filter(i => i) as Gear[];

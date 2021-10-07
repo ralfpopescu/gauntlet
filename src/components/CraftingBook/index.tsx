@@ -8,9 +8,10 @@ grid-template-columns: 1fr 1fr 1fr 1fr;
 `
 
 export const CraftingBook = () => {
+    
     return (
         <Container>
-            {recipes.map(recipe => <Recipe recipe={recipe}/>)}
+            {recipes.map(recipe => <Recipe recipe={recipe} />)}
         </Container>
     )
 }

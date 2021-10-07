@@ -1,13 +1,16 @@
 import './App.css';
-import { Game } from './components/Game'
-import { Craft } from './components/Craft'
+import { Provider } from 'react-redux'
+import store from './redux/store'
+import AppContent from './AppContent'
 
 const App = () => {
+
   return (
-    <div className="App">
-      {/* <Game /> */}
-      <Craft />
-    </div>
+    <Provider store={store}>
+      <div className="App">
+        <AppContent />
+      </div>
+    </Provider>
   );
 }
 

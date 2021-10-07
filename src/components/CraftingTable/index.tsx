@@ -1,7 +1,20 @@
-import { useState } from 'react'
+import { useAppDispatch, useAppSelector } from '../../redux'
+import { 
+    choose, 
+    removeChoice, 
+    confirm, 
+    putOnCraftingTable, 
+    removeFromCraftingTable, 
+    craft } from '../../redux/slices/crafting'
+import { initializePlayer, initializeTurn, PlayerIndex } from '../../redux/slices/game'
+import { startGame } from '../../redux/slices/app'
 import styled from "styled-components";
 import { ethos, MetaEthos as MetaEthosType } from '../../utils/ethos'
+import { Gear } from '../../types-app'
+import { build1, build2, randomName } from '../../utils/default-builds';
 import { MetaEthos, EmptyMetaEthos} from '../MetaEthos'
+import { PlayerGear } from '../PlayerGear'
+import { gearIdsToGear } from '../../utils/recipes';
 
 const Container = styled.div`
 display: grid;
@@ -29,30 +42,20 @@ const Column = styled.div`
 display: column;
 `
 
+export const CraftingTable = () => {
+    const { choices, hand, chosen, craftingTable, metaEthosInventory, playerGear, confirmed } = useAppSelector(state => state.crafting);
+    const dispatch = useAppDispatch();
 
-type CraftingTableProps = { 
-    hand: MetaEthosType[], 
-    chosen: MetaEthosType[], 
-    choices: MetaEthosType[], 
-    onMetaEthosClick: ((metaEthos: MetaEthosType) => void)
-    onConfirm: () => void,
-    confirmed: boolean,
-    craftingTableIngredients: MetaEthosType[], 
-    onCraftingTableIngredientClick: ((metaEthos: MetaEthosType) => void),
-    clearTable: () => void,
-}
+    const addFromChoices = (index: number) => dispatch(choose(index))
+    const onMetaEthosInventoryClick = (index: number) => dispatch(putOnCraftingTable(index))
+    const onConfirm = () => dispatch(confirm())
+    const onPlay = () => {
+        dispatch(initializePlayer({ name: randomName(), playerIndex: PlayerIndex.Player, gear: [...playerGear] }))
+        dispatch(initializePlayer({ name: randomName(), playerIndex: PlayerIndex.Opponent, gear: build2 }))
+        dispatch(initializeTurn());
+        dispatch(startGame())
+    }
 
-export const CraftingTable = ({ 
-    hand, 
-    chosen, 
-    choices, 
-    onMetaEthosClick, 
-    onConfirm, 
-    confirmed, 
-    clearTable,
-    craftingTableIngredients,
-    onCraftingTableIngredientClick,
-} : CraftingTableProps) => {
     return (
         <Container>
             {!confirmed ? 
@@ -60,29 +63,34 @@ export const CraftingTable = ({
             <div>Your MetaEthos:</div>
             {console.log(hand)}
             <Hand>
-            <EthosContainer>{hand.map(ethos => <MetaEthos ethos={ethos} />)}</EthosContainer>
+            <EthosContainer>{hand.map((ethos) => <MetaEthos ethos={ethos} />)}</EthosContainer>
             <Column>
             <div>Pick 5 more to add:</div>
-            <EthosContainer>{choices.map(ethos => <MetaEthos ethos={ethos} onClick={onMetaEthosClick}/>)}</EthosContainer>
+            <EthosContainer>{choices.map((ethos, i) => ethos ? 
+            <MetaEthos ethos={ethos} onClick={() => addFromChoices(i)}/> 
+            : <EmptyMetaEthos />)}</EthosContainer>
             <EthosContainer>
-                {chosen.map(ethos => <MetaEthos ethos={ethos} />)}
-                {new Array(10 - (chosen.length + hand.length)).fill(null).map((_, i) => <EmptyMetaEthos />)}
+                {chosen.map(ethos => ethos ? <MetaEthos ethos={ethos} /> : <EmptyMetaEthos />)}
             </EthosContainer>
             </Column>
             </Hand>
             <button onClick={onConfirm}>confirm</button>
+            <button onClick={onPlay}>play</button>
             </>)
             :
             (<>
             <div>CRAFTING TABLE</div>
             <EthosContainer>
-                {[...hand, ...chosen].map((ethos) => <MetaEthos ethos={ethos} onClick={onCraftingTableIngredientClick}/>)}
+                {metaEthosInventory.map((ethos, i) => ethos ? 
+                <MetaEthos ethos={ethos} onClick={() => onMetaEthosInventoryClick(i)}/> 
+                : <EmptyMetaEthos />)}
             </EthosContainer>
             <EthosContainer>
-                {craftingTableIngredients.map((ethos) => <MetaEthos ethos={ethos} />)}
-                {new Array(5 - craftingTableIngredients.length).fill(null).map((_, i) => <EmptyMetaEthos />)}
+                {craftingTable.map(ethos => ethos ? <MetaEthos ethos={ethos} /> : <EmptyMetaEthos />)}
             </EthosContainer>
-            <button onClick={clearTable}>clear</button>
+            <PlayerGear gear={gearIdsToGear(playerGear)}/>
+            <button>clear</button>
+            <button onClick={onPlay}>play</button>
             </>)}
         </Container>
     )
