@@ -102,11 +102,13 @@ export const Game = () => {
         // we will update these as effects happen, and then commit it to the store at the end
         let updatedAttackingPlayer = { ...attackingPlayer }
         let updatedDefendingPlayer = { ...defendingPlayer }
+
+        console.log('0', { updatedDefendingPlayer })
     
         gearIdsToGear(attackingPlayer.gear).forEach(gear => {
             const attackPayload = gear.onAttack({
-                attackingPlayer, 
-                defendingPlayer, 
+                attackingPlayer: updatedAttackingPlayer, 
+                defendingPlayer: updatedDefendingPlayer, 
                 round,
             })
             console.log({ gear, attackPayload, attackingPlayerIndex })
@@ -115,11 +117,13 @@ export const Game = () => {
             if (attackPayload?.updatedDefendingPlayer) updatedDefendingPlayer = { ...updatedDefendingPlayer, ...attackPayload.updatedDefendingPlayer }
             addEvents(attackPayload?.events || [])
         })
+
+        console.log('1', { updatedDefendingPlayer })
     
         gearIdsToGear(defendingPlayer.gear).forEach(gear => {
             const defendPayload = gear.onDefend({
-                attackingPlayer, 
-                defendingPlayer, 
+                attackingPlayer: updatedAttackingPlayer, 
+                defendingPlayer: updatedDefendingPlayer, 
                 round,
             })
             console.log({ gear, defendPayload, attackingPlayerIndex })
@@ -128,14 +132,15 @@ export const Game = () => {
             addEvents(defendPayload?.events || [])
         })
 
+        console.log('2', { updatedDefendingPlayer })
+
 
         //make sure to use "updatedAttackingPlayer" after all the gear effects have happened!
         // these are temporary states that happen because of the buffs/debuffs, but shouldn't get stored
         const attackingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(updatedAttackingPlayer);
-        if(!turn) {
-            console.log('attackingPlayerWithStatus!!', attackingPlayerWithStatus)
-        }
         const defendingPlayerWithStatus = applyBuffsAndDebuffsToPlayer(updatedDefendingPlayer);
+
+        console.log('3', { updatedDefendingPlayer: defendingPlayerWithStatus })
 
         const missRoll = !roll(attackingPlayerWithStatus.accuracy);
         const dodgeRoll = roll(defendingPlayerWithStatus.dodgeChance);
@@ -143,17 +148,12 @@ export const Game = () => {
 
         // this will reduce the number of turns left on the statuses
         const newStatus = processStatusTurns(updatedAttackingPlayer);
-        if(!turn) {
-            console.log('newStatus!!', newStatus)
-        }
-       
         //update our player with the new statuses
         updatedAttackingPlayer.status = newStatus;
 
         
         const attackingPlayerAttack = critRoll ? attackingPlayerWithStatus.attack * 2 : attackingPlayerWithStatus.attack;
         if(!missRoll && !dodgeRoll) {
-            console.log('before attack', updatedDefendingPlayer)
             updatedDefendingPlayer = applyDamageToPlayer(updatedDefendingPlayer, attackingPlayerAttack)
             const hitEvent = { message: `${attackingPlayer.name} hits for ${attackingPlayerAttack} damage.`, style: {color: 'orange' } }
             addEvent(hitEvent)
@@ -166,6 +166,8 @@ export const Game = () => {
                 addEvent(dodgeEvent)
             } else {}
         }
+
+        console.log('3', { updatedDefendingPlayer })
 
         setPlayer(updatedAttackingPlayer, attackingPlayerIndex);
         setPlayer(updatedDefendingPlayer, defendingPlayerIndex);
