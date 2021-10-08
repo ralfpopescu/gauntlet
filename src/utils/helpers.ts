@@ -10,3 +10,12 @@ export const roll = (percentage: number) => {
     const rollOutOf100 = randomNumber(0, 100)
     return rollOutOf100 < numberToBeLessThan;
 }
+
+export const statEffectsToString = (statEffects: { [key: string]: number }) => {
+    const stats = Object.keys(statEffects)
+    return stats.map(stat => {
+        const value = statEffects[stat];
+        if(value >= 0) return `${stat} +${value}`
+        return `${stat} ${value}`
+    }).join(' / ')
+}

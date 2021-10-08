@@ -39,7 +39,11 @@ justify-content: center;
 `
 
 const Column = styled.div`
-display: column;
+`
+
+const Row = styled.div`
+display: flex;
+display: row;
 `
 
 export const CraftingTable = () => {
@@ -61,11 +65,10 @@ export const CraftingTable = () => {
             {!confirmed ? 
             (<>
             <div>Your MetaEthos:</div>
-            {console.log(hand)}
             <Hand>
             <EthosContainer>{hand.map((ethos) => <MetaEthos ethos={ethos} />)}</EthosContainer>
             <Column>
-            <div>Pick 5 more to add:</div>
+            <div>Pick 3 more to add to your inventory:</div>
             <EthosContainer>{choices.map((ethos, i) => ethos ? 
             <MetaEthos ethos={ethos} onClick={() => addFromChoices(i)}/> 
             : <EmptyMetaEthos />)}</EthosContainer>
@@ -74,8 +77,9 @@ export const CraftingTable = () => {
             </EthosContainer>
             </Column>
             </Hand>
-            <button onClick={onConfirm}>confirm</button>
-            <button onClick={onPlay}>play</button>
+            <div style={{ display: 'block' }}>
+            <button onClick={onConfirm}>confirm selection</button>
+            </div>
             </>)
             :
             (<>
@@ -88,9 +92,11 @@ export const CraftingTable = () => {
             <EthosContainer>
                 {craftingTable.map(ethos => ethos ? <MetaEthos ethos={ethos} /> : <EmptyMetaEthos />)}
             </EthosContainer>
-            <PlayerGear gear={gearIdsToGear(playerGear)}/>
-            <button>clear</button>
-            <button onClick={onPlay}>play</button>
+            <PlayerGear gear={gearIdsToGear(playerGear)} isHorizontal />
+            <Row>
+                <button>clear crafting table</button>
+                <button onClick={onPlay}>start gauntlet</button>
+            </Row>
             </>)}
         </Container>
     )

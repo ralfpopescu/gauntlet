@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { Recipe as RecipeType } from '../../../utils/recipes'
+import { statEffectsToString } from '../../../utils/helpers'
 import styled from 'styled-components'
 import { MetaEthos } from '../../MetaEthos'
 import { getMetaEthosByName } from '../../../utils/ethos'
@@ -63,15 +64,7 @@ const getIconFromStatName: IconMap = {
 }
 
 
-const Stats = ({ stats }: { stats: StatEffects }) => {
-    const statNames = Object.keys(stats) as Array<keyof StatsType>;
-    return (
-        <Row>
-            {/* @ts-ignore */}
-            {statNames.map((statName) => <Row>{getIconFromStatName[statName]()} {stats[statName]}</Row>)}
-        </Row>
-    )
-}
+const Stats = ({ stats }: { stats: StatEffects }) => <>{statEffectsToString(stats)}</>
 
 const meetsRequirements = (recipe: RecipeType, ingredients: Array<MetaEthosType | null>, upgrade: boolean) => {
     const ingredientNames = ingredients.filter(i => i).map(i => i ? i.name : null);

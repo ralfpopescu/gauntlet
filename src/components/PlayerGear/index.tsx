@@ -1,11 +1,14 @@
 import { Gear } from '../../types-app'
 import styled from 'styled-components'
+import { statEffectsToString } from '../../utils/helpers'
 
-type PlayerGearProps = { gear: Gear[] }
+type PlayerGearProps = { gear: Gear[], isHorizontal?: boolean }
 
-const Container = styled.div`
+const Container = styled.div<{ isHorizontal?: boolean }>`
 display: flex;
-flex-direction: column;
+flex-direction: ${props => props.isHorizontal ? 'row' : 'column'};
+padding: 16px;
+border: 1px dotted black;
 `
 
 type SlotProps = { gear: Gear, name: string }
@@ -14,13 +17,14 @@ const Slot = ({ gear, name }: SlotProps) => {
     return (
         <Container>
             <div>{name}</div>
-            <div>{JSON.stringify(gear.statEffects)}</div>
-            <div>{gear.effectDescription}</div>
+            <div>{gear.name}</div>
+            <div>{statEffectsToString(gear.statEffects)}</div>
+            {gear.effectDescription && <div>*{gear.effectDescription}*</div>}
         </Container>
     )
 }
 
-export const PlayerGear = ({ gear }: PlayerGearProps) => {
+export const PlayerGear = ({ gear, isHorizontal }: PlayerGearProps) => {
     const head = gear.find(g => g.slot === 'head');
     const mainhand = gear.find(g => g.slot === 'mainhand');
     const offhand = gear.find(g => g.slot === 'offhand');
@@ -28,7 +32,7 @@ export const PlayerGear = ({ gear }: PlayerGearProps) => {
     const feet = gear.find(g => g.slot === 'feet');
 
     return (
-        <Container>
+        <Container isHorizontal={isHorizontal}>
             {head && <Slot gear={head} name="Head"/>}
             {mainhand && <Slot gear={mainhand} name="Main-hand"/>}
             {offhand && <Slot gear={offhand} name="Off-hand"/>}
